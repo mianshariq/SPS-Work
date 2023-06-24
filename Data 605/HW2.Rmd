@@ -1,0 +1,61 @@
+---
+title: "HW2"
+author: "Shariq Mian"
+date: "3/5/2023"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#Randomly generated 4 by 4 matrix
+matrix4x4 <- matrix(sample.int(500,size=16,replace=FALSE),nrow=4,ncol=4)
+matrix4x4
+```
+
+  
+
+#LU decomposition function
+```{r}
+lower_upper_decomp_square <- function(x){
+  
+  #to check and ensure x is a square matrix, and > than 1
+  if(nrow(x) != ncol(x) | (nrow(x) == 1 & ncol(x) == 1)){
+    message("Square matrices greater than 1 by 1")
+  }
+  
+  else{
+    #lower diagonal 
+    lower<-diag(nrow(x))
+    
+    for(i in 1:nrow(x)){
+      for(j in 1:ncol(x)){
+        if (j < i){
+          z <-x[i,j]/x[j,j]
+          lower[i,j]<-z
+          
+          x[i,]<- x[i,]- z*x[j,]       #row reduce
+        }
+      }
+    }
+  }
+  #initial matrix
+  print(matrix4x4)
+  #lower matrix
+  print('L')
+  print(lower)
+  #upper matrix
+  print('U')
+  print(x)
+
+  reconstruction<-lower%*%x
+  print("L*U")
+  reconstruction
+}
+```
+
+```{r}
+lower_upper_decomp_square(matrix4x4)
+```

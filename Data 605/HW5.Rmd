@@ -1,124 +1,186 @@
 ---
-title: "DATA605 HW6"
+title: "HW5"
 author: "Shariq Mian"
-date: "3/5/2023"
-output:
-  pdf_document: default
-  html_document: default
-  word_document: default
+date: "2023-05-16"
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Question 1
-A bag contains 5 green and 7 red jellybeans. How many ways can 5 jellybeans be withdrawn from the bag so that the number of green ones withdrawn will be less than 2?
-```{r}
+## Q1
+A new test for multinucleoside-resistant (MNR) human immunodeficiency virus type 1 (HIV-1) variants was recently developed. The test maintains 96% sensitivity, meaning that, for those with the disease, it will correctly report “positive” for 96% of them. The test is also 98% specific, meaning that, for those without the disease, 98% will be correctly reported as “negative.” MNR HIV-1 is considered to be rare (albeit emerging), with about a .1% or .001 prevalence rate. Given the prevalence rate, sensitivity, and specificity estimates:
 
-Q1=choose(5,1)*choose(7,4)+choose(5,0)*choose(7,5)
-Q1 #5C1∗7C4+5C0∗7C5=196
+What is the probability that an individual who is reported as positive by the new test actually has the disease?
+```{r}
+positive <- 0.96
+false_negative <- 1 - positive
+negative <- 0.98
+false_positive <- 1 - negative
+
+pos_rate <- 0.001
+neg_rate <- 1 - pos_rate
+
+population <- 100000
+pop_pos <- population * pos_rate
+pop_neg <- (population - pop_pos) * neg_rate
+
+P_actually_has <- (positive * pos_rate) / ((positive * pos_rate) + (false_positive * neg_rate))
+print(paste0("Percentage that actually is positive: ", round(P_actually_has * 100, 2), "%"))
 ```
 
-## Question 
-A certain congressional committee consists of 14 senators and 13 representatives. How many ways can a subcommittee of 5 be formed if at least 4 of the members must be representatives?
+## Q2
+(Binomial)
+P(x;p,n)=(nk)(p)x(1−p)(n−k)forx=0,1,2,...,n
+where:(nk)=n!k!(n−k)!
+
+The probability of your organization receiving a Joint Commission inspection in any given month is .05. What is the probability that, after 24 months, you received exactly 2 inspections?
 ```{r}
-Q2 = choose(13,4)*choose(14,1)+choose(13,5)+choose(14,0)
-Q2 #11298 Ways.
+p <- 0.05
+n <- 24
+x <- 2
+
+prob_2 <- choose(n, x) * p^x * (1 - p)^(n - x)
+print(paste0("The probability of receiving exactly 2 inspections in 24 months is: ", round(prob_2 * 100, 1), "%"))
+
+prob_at_least_2 <- sum(dbinom(x:n, n, p))
+print(paste0("The probability of receiving 2 or more inspections in 24 months is: ", round(prob_at_least_2 * 100, 1), "%"))
+
+prob_less_than_2 <- sum(dbinom(0:(x-1), n, p))
+print(paste0("The probability of receiving fewer than 2 inspections in 24 months is: ", round(prob_less_than_2 * 100, 1), "%"))
+
+expected_inspections <- n * p
+print(paste0("The expected number of inspections is: ", expected_inspections))
+
+standard_deviation <- sqrt(n * p * (1 - p))
+print(paste0("The standard deviation is: ", standard_deviation))
+
 ```
 
+## Q3
+(Poisson)
+f(k;λ)=Pr(X=k)=λke−λk!
+You are modeling the family practice clinic and notice that patients arrive at a rate of 10 per hour.
 
-Question 3
-
-If a coin is tossed 5 times, and then a standard six-sided die is rolled 2 times, and finally a group of three cards are drawn from a standard deck of 52 cards without replacement, how many different outcomes are possible?
+What is the probability that exactly 3 arrive in one hour?
 ```{r}
-Q3 = 2^5*6^2*52*51*50
-Q3
+lambda <- 10
+
+prob_3 <- dpois(3, lambda)
+print(paste0("The probability that exactly 3 patients arrive in one hour is: ", round(prob_3, 4)))
+
+prob_more_than_10 <- 1 - ppois(10, lambda)
+print(paste0("The probability that more than 10 patients arrive in one hour is: ", round(prob_more_than_10, 3)))
+
+expected_arrivals <- lambda * 8
+print(paste0("The expected number of arrivals in 8 hours is: ", expected_arrivals))
+
+standard_deviation <- sqrt(lambda * 8)
+print(paste0("The standard deviation is: ", standard_deviation))
 ```
 
-## Question 4
-3 cards are drawn from a standard deck without replacement. What is the probability that at least one of the cards drawn is a 3? Express your answer as a fraction or a decimal number rounded to four decimal places.
+## Q4
+Your subordinate with 30 supervisors was recently accused of favoring nurses. 15 of the subordinate’s workers are nurses and 15 are other than nurses. As evidence of malfeasance, the accuser stated that there were 6 company-paid trips to Disney World for which everyone was eligible. The supervisor sent 5 nurses and 1 non-nurse.
+
+If your subordinate acted innocently, what was the probability he/she would have selected five nurses for the trips?
 ```{r}
-three = round(1- 48/52*47/51*46/50,4)
-totals = choose(52,3)
-not_three = choose(48,3)
-pthree = round(1-not_three/totals,4)
-pthree
+total_workers <- 30
+total_nurses <- 15
+total_non_nurses <- total_workers - total_nurses
+trips <- 6
+nurses_selected <- 5
+
+prob_5_nurses <- choose(total_nurses, nurses_selected) * choose(total_non_nurses, trips - nurses_selected) / choose(total_workers, trips)
+print(paste0("The probability of innocently selecting 5 nurses for the trips is: ", round(prob_5_nurses, 3)))
+
+expected_nurses <- (total_nurses / total_workers) * trips
+print(paste0("The expected number of nurses to be sent is: ", expected_nurses))
+
+expected_non_nurses <- (total_non_nurses / total_workers) * trips
+print(paste0("The expected number of non-nurses to be sent is: ", expected_non_nurses))
+
+
 ```
 
+## Q5
+P(X=x)=(1–p)(x–1)pforx=1,2,..,n
+The probability of being seriously injured in a car crash in an unspecified location is about .1% per hour. A driver is required to traverse this area for 1200 hours in the course of a year.
 
-## Question 5
-Lorenzo is picking out some movies to rent, and he is primarily interested in documentaries and mysteries. He has narrowed down his selections to 17 documentaries and 14 mysteries.
-
-### Step 1. How many different combinations of 5 movies can he rent?
-
+What is the probability that the driver will be seriously injured during the course of the year?
 ```{r}
-Q5a<-choose(31,5)
-Q5a
-m1=choose(14,1)*choose(17,4)
-m1
-m2=choose(14,2)*choose(17,3)
-m2
-m3= choose(14,3)*choose(17,2)
-m3
-m4=choose(14,4)*choose(17,1)
-m4
-m5=choose(14,5)*choose(17,0)
-m5
+p <- 0.001
+n <- 1200
+
+prob_injured_year <- pgeom(1, p)
+print(paste0("The probability of a driver being seriously injured during the course of a year is: ", round(prob_injured_year * 100, 2), "%"))
+
+prob_injured_15_months <- pgeom(1, p * 15)
+print(paste0("The probability of a driver being seriously injured during the course of 15 months is: ", round(prob_injured_15_months * 100, 2), "%"))
+
+expected_hours <- 1 / p
+print(paste0("The expected number of hours a driver will drive before being seriously injured is: ", expected_hours))
+
+prob_next_100_hours <- pgeom(5, p, lower.tail = FALSE)
+print(paste0("The probability of a driver being injured in the next 100 hours is: ", round(prob_next_100_hours * 100, 3), "%"))
+
+
 ```
 
-### Step 2. How many different combinations of 5 movies can he rent if he wants at least one mystery?
+## Q6
+You are working in a hospital that is running off of a primary generator which fails about once in 1000 hours.
+
+What is the probability that the generator will fail more than twice in 1000 hours?
 ```{r}
-Q5b<- m1+m2+m3+m4+m5
-Q5b
+lambda <- 1 / 1000
+prob_more_than_twice <- ppois(2, lambda, lower.tail = FALSE)
+print(paste0("The probability that the generator will fail more than twice in 1000 hours is: ", round(prob_more_than_twice * 100, 2), "%"))
+
+expected_value <- 1 / lambda
+print(paste0("The expected value is: ", expected_value))
+
+
 ```
 
-## Question 6
+## Q7
+A surgical patient arrives for surgery precisely at a given time. Based on previous analysis (or a lack of knowledge assumption), you know that the waiting time is uniformly distributed from 0 to 30 minutes.
 
-In choosing what music to play at a charity fund raising event, Cory needs to have an equal number of symphonies from Brahms, Haydn, and Mendelssohn. If he is setting up a schedule of the 9 symphonies to be played, and he has 4 Brahms, 104 Haydn, and 17 Mendelssohn symphonies from which to choose, how many different schedules are possible? Express your answer in scientific notation rounding to the hundredths place.
-
+What is the probability that this patient will wait more than 10 minutes?
 ```{r}
-Q6 <- format(signif(104*103*101*17*16*15*4*3*2,3),scientific = TRUE)
-Q6
+wait_time <- 30
+prob_wait_more_than_10 <- 1 - punif(10, 0, wait_time)
+print(paste0("The probability of waiting more than 10 minutes is: ", round(prob_wait_more_than_10 * 100, 1), "%"))
+
+prob_wait_another_5 <- 1 - punif(15, 10, wait_time)
+print(paste0("The probability of waiting at least another 5 minutes after waiting for 10 minutes is: ", round(prob_wait_another_5 * 100, 1), "%"))
+
+expected_waiting_time <- wait_time / 2
+print(paste0("The expected waiting time is: ", expected_waiting_time, " minutes"))
+
+
 ```
 
+## Q8
+Your hospital owns an old MRI, which has a manufacturer’s lifetime of about 10 years (expected value). Based on previous studies, we know that the failure of most MRIs obeys an exponential distribution.
 
-## Question 7
-An English teacher needs to pick 13 books to put on his reading list for the next school year, and he needs to plan the order in which they should be read. He has narrowed down his choices to 6 novels, 6 plays, 7 poetry books, and 5 nonfiction books.
-
+What is the expected failure time?
 ```{r}
-nf0 <- 19*18*17*16*15*14*13*12*11*10*9*8*7
-nf1 <- 19*18*17*16*15*14*13*12*11*10*9*8*6
-nf2 <- 19*18*17*16*15*14*13*12*11*10*9*6*5
-nf3 <- 19*18*17*16*15*14*13*12*11*10*6*5*4
-nf4 <- 19*18*17*16*15*14*13*12*11*6*5*4*3
-Q7 <- format(signif(nf0+nf1+nf2+nf3+nf4,3),scientific=TRUE)
-Q7
-Q7a <- format(signif(6*5*4*3*2*1*18*17*16*15*14*13*12,3),scientific = TRUE)
-Q7a
+lifetime <- 10
+expected_failure <- lifetime
+print(paste0("The expected failure time is: ", expected_failure, " years"))
+
+standard_deviation <- 1 / lifetime
+print(paste0("The standard deviation is: ", standard_deviation))
+
+prob_fail_after_8_years <- 1 - pexp(8, 1 / lifetime)
+print(paste0("The probability that the MRI will fail after 8 years is: ", round(prob_fail_after_8_years * 100, 2), "%"))
+
+prob_fail_in_next_2_years <- pexp(2, 1 / lifetime, lower.tail = FALSE)
+print(paste0("The probability that the MRI will fail in the next two years, given that it has been owned for 8 years, is: ", round(prob_fail_in_next_2_years * 100, 2), "%"))
 ```
 
-## Question 8
-Zane is planting trees along his driveway, and he has 5 sycamores and 5 cypress trees to plant in one row. What is the probability that he randomly plants the trees so that all 5 sycamores are next to each other and all 5 cypress trees are next to each other? Express your answer as a fraction or a decimal number rounded to four decimal places.
+## Q2
 ```{r}
-ways <-2
-totaltrees <- 10
-sycamores <-5
-cypress <- 5
-Q8 <- round(ways/(factorial(totaltrees)/(factorial(sycamores)^2)),4)
-Q8
-```
 
-## Question 9
 
-If you draw a queen or lower from a standard deck of cards, I will pay you $4. If not, you pay me $16. (Aces are considered the highest card in the deck.)
-```{r}
-lessq <- 44/52
-win <- 4
-lose <- -16
-notlessq <-8/52
-Q9 <- round(lessq*win+notlessq*lose,2)
-Q9 
-Q9a <- round(lessq*833*4 + notlessq*833*(-16),2)
-Q9a
 ```

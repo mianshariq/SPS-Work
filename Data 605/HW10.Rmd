@@ -1,0 +1,41 @@
+---
+title: "HW10"
+author: "Shariq Mian"
+date: "2023-05-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+If Smith is in state 0, he will always stay in state 0 (0 -> 0).
+If Smith is in state L, he will always stay in state L (L -> L).
+If Smith is in any state from 1 to 7, he has a 40% chance of winning and moving to the next state with a higher fortune, and a 60% chance of losing and moving to the previous state with a lower fortune (i.e., i -> i+1 with probability 0.4 and i -> i-1 with probability 0.6).
+If Smith is in state 8, he has reached his goal of having 8 dollars and will transition to state 9 (8 -> 9).
+We can use these transition probabilities to calculate the steady-state probabilities, which represent the long-term probabilities of being in each state. The steady-state probability of being in state 9 represents the probability of winning 8 dollars before losing all the money.
+
+```{r}
+library(markovchain)
+
+# Create the transition matrix
+transition_matrix <- matrix(0, nrow = 10, ncol = 10)  # 10 states (0 to 8, L)
+transition_matrix[1, 1] <- 1  # Stay in state 0
+transition_matrix[10, 10] <- 1  # Stay in state L
+transition_matrix[9, 9] <- 1  # Transition from state 8 to 9 (winning state)
+for (i in 2:8) {
+  transition_matrix[i, i + 1] <- 0.4  # Transition to next state with 40% probability
+  transition_matrix[i, i - 1] <- 0.6  # Transition to previous state with 60% probability
+}
+
+# Create the Markov chain object
+mc <- new("markovchain", states = c("0", "1", "2", "3", "4", "5", "6", "7", "8", "L"), byrow = TRUE, transitionMatrix = transition_matrix, name = "Smith's Fortune")
+
+# Calculate the steady-state probabilities
+steady_state <- steadyStates(mc)
+
+# Print the probability of winning 8 dollars before losing all money
+winning_probability <- steady_state[9]
+cat("Probability of winning 8 dollars before losing all money:", winning_probability, "\n")
+
+```

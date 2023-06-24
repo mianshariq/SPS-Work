@@ -1,0 +1,545 @@
+---
+title: "Untitled"
+author: "Shariq Mian"
+date: "1/30/2023"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Overview
+
+<p>This is a banking and marketing dataset that was created by Sérgio Moro (ISCTE-IUL), Paulo Cortez (Univ. Minho) and Paulo Rita (ISCTE-IUL).It is a binary classification problem with the goal of predicting if the client will subscribe a bank term deposit (variable y).</p>
+```{r echo=FALSE}
+library(ggplot2)
+library(kableExtra)
+library(dplyr)
+library(skimr)
+library(tidytable)
+library(corrplot)
+library(smotefamily)
+library(reshape2)
+library(pscl)
+library(pROC)
+library(caret)
+library(xgboost)
+library(tidytable)
+
+
+```
+
+```{r echo=FALSE}
+og_training <- read.csv('https://github.com/mianshariq/SPS/raw/f279f0eff65425a3ebe48401a458cd472a47e575/bank-additional-full.csv',sep=";")
+
+
+set.seed(92584)
+trainIndex <- createDataPartition(og_training$y, p = .75,
+                                  list = FALSE,
+                                  times = 1,
+                                  )
+og_training <- og_training[trainIndex,]
+og_testing <- og_training[-trainIndex,]
+
+```
+
+## Data Exploration
+<p>This dataset consist of 11 character variables and 10 numeric variables. There are no missing values.</p>
+```{r echo=F}
+d <- og_training %>% skim() 
+d %>% select(.,c(skim_variable,n_missing,complete_rate,numeric.mean,numeric.sd)) %>% kable()
+remove(d)
+```
+
+### Balance
+<p>The difference between those not enrolling into the services and those that due is heavily imbalanced. This will make predicting those that enroll more difficult.</p>
+
+```{r warning=F, echo=FALSE}
+ggplot(og_training,aes(y))+
+  geom_histogram(stat='count',fill='blue')
+```
+
+### Unique Values in Numeric Fields
+<p>From the unique values in the numeric fields we can see that several variables can be grouped. Such as  cons.price.idx and cons.conf.idx. The previous variable looks like it should either be grouped as 0's and 1's signifying previous conversations or simply factored into groups of the number of conversations.</p>
+
+```{r echo=FALSE,warning=F}
+for(i in 1:21){
+  name <- colnames(og_training[i])
+  if((typeof(og_training[,i]) == 'integer')|| (typeof(og_training[,i]) == 'double')) {
+    
+    
+    print(ggplot(og_training,aes(og_training[,i]))+
+             geom_histogram(stat='count',color='blue')+
+            xlab(name)+
+            ylab('Frequency'))
+  }
+  
+}
+
+
+```
+
+### Correlations
+<p>From the correlation plot we can see that the emp.var.rate variable is highly correlated to three other variables, cons.price.idx, euribor3m and nr.employed. We also see that euribor3m and nr.employed are highly correlated with each other.</p>
+<p>Due to this correlation both the emp.var.rate and euribor3m variables should be removed to limit the risk of multicollinearity.</p>
+```{r echo=FALSE}
+cor_data <- og_training[,c(11,12,13,14,16,17,18,19,20)]
+cor_data$y <- as.numeric(as.factor(og_training$y))
+```
+
+```{r echo=F}
+cor_t <- cor(cor_data, use = "na.or.complete")
+
+corrplot(cor_t,
+  type = "lower",
+  method='number',
+  order = "original",
+  tl.col = "black",
+  tl.srt = 45,
+  tl.cex = 0.6,
+  number.cex=.6)
+remove(cor_data)
+remove(cor_t)
+```
+
+
+
+
+## Data Preparation
+
+### Remove correlated variables
+```{r}
+og_training <- subset(og_training, select=-c(emp.var.rate, euribor3m))
+
+og_testing <- subset(og_testing, select=-c(emp.var.rate, euribor3m))
+```
+
+### Turn y from 'no'/'yes' to 0,1
+```{r}
+og_training$y <- ifelse(og_training$y == "no",0,1)
+
+og_testing$y <- ifelse(og_testing$y == "no",0,1)
+```
+
+### Grouping 
+<p>The cons.price.idx variable has a range from 92.2 to 94.77. The histogram shows us that groups from 92 to 93,  93 to 94 and everything greater than 94, should be a relatively normal looking distribution of variables.</p>
+```{r echo=F}
+changed_training <- og_training
+summary(changed_training$cons.price.idx)
+histogram(changed_training$cons.price.idx)
+```
+
+```{r}
+changed_training$cons_price_group <- ifelse(as.numeric(changed_training$cons.price.idx) >= 94,2,ifelse(as.numeric(changed_training$cons.price.idx) <94 & as.numeric(changed_training$cons.price.idx) >=93,1,0))
+changed_training$cons_price_group <- as.character(changed_training$cons_price_group)
+
+
+
+changed_testing <- og_testing
+changed_testing$cons_price_group <- ifelse(as.numeric(changed_testing$cons.price.idx) >= 94,2,ifelse(as.numeric(changed_testing$cons.price.idx) <94 & as.numeric(changed_testing$cons.price.idx) >=93,1,0))
+changed_testing$cons_price_group <- as.character(changed_testing$cons_price_group)
+```
+
+```{r warning=F, echo=FALSE}
+ggplot(changed_training,aes(x=cons_price_group))+
+  geom_histogram(stat='count',fill='blue')
+```
+
+
+<p>The cons.conf.idx variable has a range between -50.8 to 26.9. It can be broken down into groups of five.</p>
+```{r warning=F, echo=FALSE}
+summary(changed_training$cons.conf.idx)
+
+ggplot(changed_training,aes(x=cons.conf.idx))+
+  geom_histogram(fill='blue')
+```
+
+
+```{r}
+changed_training$cons_confs_group <- ifelse(as.numeric(changed_training$cons.conf.idx) <= (-45),3,ifelse(as.numeric(changed_training$cons.conf.idx) >= -45 & as.numeric(changed_training$cons.conf.idx)<=(-40),2, ifelse(as.numeric(changed_training$cons.conf.idx) >= -40 & as.numeric(changed_training$cons.conf.idx)<=(-35),1,0)))
+changed_training$cons_confs_group <- as.character(changed_training$cons_confs_group)
+
+changed_testing$cons_confs_group <- ifelse(as.numeric(changed_testing$cons.conf.idx) <= (-45),3,ifelse(as.numeric(changed_testing$cons.conf.idx) >= -45 & as.numeric(changed_testing$cons.conf.idx)<=(-40),2, ifelse(as.numeric(changed_testing$cons.conf.idx) >= -40 & as.numeric(changed_testing$cons.conf.idx)<=(-35),1,0)))
+changed_testing$cons_confs_group <- as.character(changed_testing$cons_confs_group)
+```
+
+```{r warning=F, echo=FALSE}
+ggplot(changed_training,aes(x=cons_confs_group))+
+  geom_histogram(stat='count',fill='blue')
+```
+
+### Factoring 
+<p>All the character variables will be turned into dummy variables for each respective level in the group.</p>
+
+```{r}
+library(tidytable)
+dummy <- get_dummies(changed_training)
+dummy <- subset(dummy,select=-c(job,marital,education,default,housing,loan,contact,month,day_of_week,poutcome,previous,cons.conf.idx,cons.price.idx,cons_confs_group,cons_price_group))
+remove(changed_training)
+
+dummy_testing <- get_dummies.(changed_testing)
+dummy_testing <- subset(dummy_testing,select=-c(job,marital,education,default,housing,loan,contact,month,day_of_week,poutcome,previous,cons.conf.idx,cons.price.idx,cons_confs_group,cons_price_group))
+remove(changed_testing)
+```
+
+<p>There have been problems with the variables not matching between the training and testing data. With identical I can test to make sure that all the variables are the same in both datasets.</p>
+```{r}
+identical(names(dummy),names(dummy_testing))
+```
+
+### Unbalance
+
+```{r echo=FALSE}
+dummy_smote <- SMOTE(dummy,dummy$y)
+remove(dummy)
+```
+
+
+```{r warning=F}
+ggplot(dummy_smote$data,aes(x=y))+
+  geom_histogram(stat='count',fill='blue')
+```
+
+### Training and Testing sets
+
+
+```{r }
+set.seed(93384)
+trainIndex <- createDataPartition(dummy_smote$data$y, p = .65,
+                                  list = FALSE,
+                                  times = 1,
+                                  
+                                  )
+
+ftrain <-dummy_smote$data[trainIndex,]
+ftrain <- subset(ftrain, select=-c(class))
+ftest <- dummy_smote$data[-trainIndex,]
+ftest <- subset(ftest, select=-c(class))
+
+
+train <- xgb.DMatrix(data = data.matrix(ftrain[,-c(6)]), label = ftrain$y)
+
+validate <- xgb.DMatrix(data = data.matrix(ftest[,-c(6)]), label = ftest$y)
+
+t_label <- dummy_testing$y
+true_test <- xgb.DMatrix(data = data.matrix(dummy_testing[,-c(6)]), label = t_label)
+
+```
+
+```{r}
+identical(names(ftrain),names(dummy_testing))
+```
+
+## Building Models 
+
+### Model 1 GLM basic
+```{r}
+glm_ini <- glm(y ~ ., ftrain,family='binomial')
+summary(glm_ini)
+```
+
+
+```{r warning=F}
+pred_glm <- predict(glm_ini, ftest,type='response')
+```
+
+### Ideal Binomial Threshold function
+<p>Since the binomial regression produces an estimation of probability, it is important to find the threshold that produces the best overall results.</p>
+<p>There is much debate about which statistics from the confusion matrix is the best at determining model quality. In my opinion the best model would predict the ratio of true positives and ratio of true negatives equally well. As it limits the cost of being wrong.</p>
+<p>The purpose of the ideal_binomial_threshold function is to find the threshold value that returns the smallest difference between the sensitivity and the specificity. This difference signifies the threshold value that balances the ratios of true positive predictions and the true negative predictions. Thus informing us of the threshold that determines the most balanced predictive power of the model.</p>
+```{r}
+ideal_binomial_threshold <- function(predictions,y){
+  
+  thresholds <- data.frame(matrix(ncol=8,nrow=501))
+  colnames(thresholds) <- c('Threshold','Balanced_Accuracy','Sensitivity','Specificity',
+                            'Sen_Spec_Diff')
+  index=1
+  
+  for(i in seq(.25,.75,.001)){
+      
+      binom <- ifelse(predictions>i,1,0)
+      cM <- confusionMatrix(as.factor(binom),as.factor(y))
+      
+      thresholds$Threshold[index] <- i
+      thresholds$Balanced_Accuracy[index] <- as.numeric(cM$byClass['Balanced Accuracy'])
+      thresholds$Sensitivity[index] <-as.numeric(cM$byClass['Sensitivity'])
+      thresholds$Specificity[index] <-as.numeric(cM$byClass['Specificity'])
+      sen<- as.numeric(cM$byClass['Sensitivity'])
+      spec <- as.numeric(cM$byClass['Specificity'])
+      sen_spec_diff <- ifelse(sen>= spec,(sen-spec), (spec-sen))
+      thresholds$Sen_Spec_Diff[index] <- sen_spec_diff
+      index <- index+1
+  }
+
+  min_thresh <- thresholds[which.min(thresholds$Sen_Spec_Diff),]
+  return(min_thresh)
+}
+
+thresh <- ideal_binomial_threshold(pred_glm,ftest$y)
+thresh
+```
+
+
+
+```{r}
+pred_glm_ideal <- ifelse(pred_glm >thresh$Threshold[1],1,0)
+cM <- confusionMatrix(factor(pred_glm_ideal),factor(ftest$y))
+cM
+```
+
+### GLM Model 1 Analysis
+<p>With a threshold of `r thresh$Threshold[1]` the model has a balanced accuracy score of `r cM$byClass['Balanced Accuracy']`. The AIC score is `r glm_ini$aic`.</p>
+
+### XGBoosting Models
+
+## Tuning the XGBoost Parameters
+<p>In order for the xgboost model to work at its maximum ability several parameters need to be selected. To select the ideal parameters caret has a package that tunes the parameters, which gives the best parameter set up.</p>
+
+### Initial Parameters
+<p>To get a rough idea of the nrounds needed to be used the  xgb.cv function will be used with a basic parameters set up.We will test a maximum of 1500 rounds.</p>
+
+```{r}
+params <- list(
+  
+  booster            = "gbtree",   
+  
+  eta                = 0.1,              
+
+  max_depth          = 5,
+  
+  gamma              = 0,
+
+  subsample          = 1,                 
+
+  colsample_bytree   = 1,                
+
+  colsample_bylevel  = 1,     
+  
+  min_child_weight   = 1,
+  
+  objective          ="binary:logistic",   #
+
+  eval_metric        = "error"
+  
+)
+
+xgbcv <- xgb.cv( params = params, data = train, nrounds = 1500, nfold=5, print_every_n = 100, early_stop_rounds = 1000,verbose=0)
+
+```
+```{r}
+min_error = min(xgbcv$evaluation_log[, test_error_mean])
+min_error_index = which.min(xgbcv$evaluation_log[, test_error_mean])
+print(min_error)
+print(min_error_index)
+
+```
+
+<p>The basic parameters shows us that the number of nrounds should be around `r min_error_index`</p>
+
+### In depth Tuning
+<p>With the caret package you can tune all the parameters at the same time, but for each choice given, the time it takes to return a tuning is increased.</p>
+<p>For this model I will have three choices for each parameter. Max depth will test depths of 4,7 and 10. Eta will test values of .05,.1 and .3. Colsample_bytree will test .5,.75 and .9. Subsample will test .5,.75 and .9. Gamma will test 0,1 and 5.</p>
+```{r}
+tune_grid <- expand.grid(
+  nrounds = as.numeric(min_error_index),
+  max_depth = c(4,7,10),
+  eta = c(.05,.1,0.3),
+  colsample_bytree = .75,
+  subsample = .9,
+  gamma = c(0,1,5),
+  min_child_weight =1
+)
+```
+
+
+```{r echo=F,include=F}
+tune_control <- trainControl(
+  method = "cv", # cross-validation
+  number = 3,
+  verboseIter = FALSE,
+  allowParallel = TRUE
+)
+```
+
+```{r}
+xgb_tune <- train(
+  x = ftrain[,-c(6)],
+  y = factor(ftrain$y),
+  trControl = tune_control,
+  tuneGrid = tune_grid,
+  method = "xgbTree",
+  verbose = 0
+)
+```
+
+```{r fig.height = 8}
+plot(xgb_tune)
+```
+
+
+### Best Tune
+<p>The bestTune variable of the xgb_tune will give us the best tuned parameters.</p>
+```{r}
+xgb_tune$bestTune
+```
+
+
+<p>With the tuned parameters I will retest the number of rounds needed and retest.</p>
+
+```{r}
+tuned_params<- list(
+  
+  booster            = "gbtree",   
+  
+  eta                = xgb_tune$bestTune$eta,              
+
+  max_depth          = xgb_tune$bestTune$max_depth,                
+
+  gamma             = xgb_tune$bestTune$gamma,
+  
+  subsample          = xgb_tune$bestTune$subsample,                 
+
+  colsample_bytree   = xgb_tune$bestTune$colsample_bytree,                
+
+  
+  min_child_weight   = xgb_tune$bestTune$min_child_weight,
+  
+
+  objective          ="binary:logistic",   #
+
+  eval_metric        = "error"
+  
+)
+
+xgbcv2 <- xgb.cv( params = params, data = train, nrounds = as.numeric(min_error_index), nfold=5, print_every_n = 100, early_stop_rounds = 1000)
+
+min_error2 = min(xgbcv2$evaluation_log[, test_error_mean])
+min_error_index2 = which.min(xgbcv2$evaluation_log[, test_error_mean])
+print(min_error)
+print(min_error_index)
+```
+
+
+```{r}
+xgb_model <- xgb.train(tuned_params, train, nrounds = as.numeric(min_error_index))
+```
+
+
+```{r}
+xgb_pred <- predict(xgb_model, validate)
+
+thresh2 <- ideal_binomial_threshold(xgb_pred,ftest$y)
+```
+
+```{r}
+xgb_pred_prob <- ifelse(xgb_pred >=thresh2$Threshold[1],1,0 )
+```
+
+```{r}
+cM2<-confusionMatrix(as.factor(xgb_pred_prob),as.factor(ftest$y))
+cM2
+```
+
+### XGB Model Analysis
+<p>The xgboost model performed ~8% better than the glm models with a ~95% prediction rate. The sensitivity and specificity scores are both ~95%. All these scores are .43 points better than the no information rate. Both positive and negative prediction rates are ~95%.</p>
+
+
+```{r}
+library(ggplot2)
+library(scales)
+```
+
+```{r}
+og_training1=og_training
+```
+
+```{r}
+var_used<-og_training1[c("age","job","marital","education","housing")] #selecting the data for segmentation
+
+customer1<-data.matrix(var_used[c("job","marital","education","housing")])
+
+var_used<-data.frame(var_used,customer1) #Data Coversion
+str(var_used)
+```
+
+
+```{r}
+job<-unique(var_used[c("job","job.1")])
+
+marital<-unique(var_used[c("marital","marital.1")])
+
+education<-unique(var_used[c("education","education.1")])
+
+housing<-unique(var_used[c("housing","housing.1")])
+
+```
+
+```{r}
+x<-c("age","job.1","marital.1","education.1","housing.1")
+```
+
+```{r}
+x
+```
+
+
+```{r}
+# Clustering Using K-Means
+
+set.seed(100)
+
+# K-meand Function to create 5 Cluster with 25 random scenario 
+segmentation<-kmeans(x=var_used[x], center=8, nstart=25)
+
+# Analyze Cluster Size Output
+og_training$cluster<-segmentation$cluster
+```
+
+```{r}
+pp <- ggplot(data=og_training, aes(x=cluster,fill=y)) + 
+      geom_bar(aes(y = (..count..)/sum(..count..)))
+      
+pp +  labs(x="Cluster", y = "Percent")
+```
+```{r}
+var_used %>%
+  as_tibble() %>%
+  mutate(cluster = segmentation$cluster,
+         state = row.names(USArrests)) %>%
+  ggplot(aes(marital, education, color = factor(cluster), label = job)) +
+  geom_text()
+```
+
+```{r}
+datacharacteristics <-og_training[which(og_training$cluster == 4),]
+a <- ggplot(data=datacharacteristics, aes(x=job)) + 
+      geom_bar(aes(y = (..count..)/sum(..count..)))
+      
+a +  labs(x="Job", y = "Percent") +theme(axis.text.x = element_text(angle=90,hjust = 0))
+
+b <- ggplot(data=datacharacteristics, aes(x=education)) + 
+      geom_bar(aes(y = (..count..)/sum(..count..)))
+
+b +  labs(x="Education", y = "Percent") +theme(axis.text.x = element_text(angle=90,hjust = 0))
+# Marital Status
+
+c <- ggplot(data=datacharacteristics, aes(x=marital)) + 
+      geom_bar(aes(y = (..count..)/sum(..count..)))
+      
+c +  labs(x="Marital", y = "Percent") +theme(axis.text.x = element_text(angle=90,hjust = 0))
+# Age
+
+d <- ggplot(data=datacharacteristics, aes(x=age)) + 
+      geom_bar(aes(y = (..count..)/sum(..count..)))
+      
+d +  labs(x="Age", y = "Percent") +theme(axis.text.x = element_text(angle=90,hjust = 0))
+```
+The most profitable customer comes from Cluster Number 4, This cluster consists on profession as admin and blue-collar, university degree for last education, who are majority married, if the telemarketer would to focus on these attributes they would have a higher success rate in getting the "Yes" feedback
+
+
+## Citations
+<p>[Moro et al., 2014] S. Moro, P. Cortez and P. Rita. A Data-Driven Approach to Predict the Success of Bank Telemarketing. Decision Support Systems, In press, http://dx.doi.org/10.1016/j.dss.2014.03.001</p>
+
+## Appendix

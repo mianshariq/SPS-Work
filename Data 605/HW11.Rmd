@@ -1,0 +1,71 @@
+---
+title: "HW11"
+author: "Shariq Mian"
+date: "2023-05-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+head(cars)
+```
+
+Plot Data
+In this linear model, speed is the independent variable and stopping distance is the dependent variable.
+
+The plot shows that stopping distance increases as speed increases.
+
+```{r}
+plot(cars, xlab = "Speed", ylab = "Stopping distance")
+```
+
+Linear Model
+This linear model is based on a single factor regression. speed is the independent variable (input) and stopping distance is the dependent variable (output).
+
+The intercept is -17.5791. The slope is 3.9324.
+
+The one factor linear model is:
+
+stopping distance = -17.5791 + 3.9324 * speed
+```{r}
+cars.lm <- lm(dist ~ speed, data = cars)
+summary(cars.lm)
+```
+
+Linear Model Summary
+Upon analyzing the linear model, the residuals distribution suggests a normal distribution, indicating a good fit.
+
+The standard error for the speed coefficient is approximately 9.4 times the coefficient value, indicating a relatively low variability. This aligns with the expectation of a good model, where the standard error should be significantly smaller than the coefficient.
+
+The p-value of 1.49e-12 suggests that the speed coefficient is highly significant and relevant in predicting the stopping distance. This means that the speed variable plays a crucial role in the model.
+
+The intercept also holds significance in the model, as indicated by its p-value of 0.0123.
+
+The multiple R-squared value of 0.6511 implies that the model explains approximately 65.11% of the variation in the data. This demonstrates a moderate to strong level of explanatory power.
+
+```{r}
+#Plot of Linear Model
+plot(cars, xlab = "Speed", ylab = "Stopping distance")
+abline(cars.lm)
+```
+
+
+Plot the Risiduals
+
+The plot below shows that the residuals look uniformly distributed around zero. The residuals appear to be uniformly scattered above and below zero.
+```{r}
+plot(fitted(cars.lm), resid(cars.lm))
+```
+
+Normal Q-Q Plot
+The plot below suggests that there’s some skew to the right.
+```{r}
+qqnorm(resid(cars.lm))
+qqline(resid(cars.lm))
+```
+
+

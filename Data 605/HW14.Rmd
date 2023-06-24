@@ -1,0 +1,60 @@
+---
+title: "HW14"
+author: "Shariq Mian"
+date: "2023-05-11"
+output:
+  pdf_document: default
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+### 1
+
+```{r}
+f <- function(x) 1/(1-x)
+f_prime <- function(x) 1/(1-x)^2
+f_double_prime <- function(x) 2/(1-x)^3
+f_triple_prime <- function(x) 6/(1-x)^4
+
+f_prime(0) # 1
+f_double_prime(0) # 2
+f_triple_prime(0) # 6
+
+f_n <- function(n, x) factorial(n)*(1-x)^(n+1)
+sum_n <- function(x) sum(sapply(0:Inf, function(n) x^n/factorial(n)))
+
+```
+
+### 2
+```{r}
+f <- function(x) exp(x)
+f_n <- function(n, x) exp(x)
+en_0 <- 1
+sum_n <- function(x) sum(sapply(0:Inf, function(n) x^n/factorial(n)))
+```
+
+### 3
+```{r}
+f <- function(x) log(1+x)
+f_prime <- function(x) 1/(1+x)
+f_double_prime <- function(x) -1/(1+x)^2
+f_triple_prime <- function(x) 2/(1+x)^3
+f_quad_prime <- function(x) -6/(1+x)^4
+
+f_prime(0) # 1
+f_double_prime(0) # -1
+f_triple_prime(0) # 2
+f_quad_prime(0) # -6
+
+sum_n <- function(x) sum(sapply(1:Inf, function(n) (-1)^(n+1)*x^n/n))
+```
+
+### 4
+```{r}
+f <- function(x) {x^(1/2)}
+
+```
+

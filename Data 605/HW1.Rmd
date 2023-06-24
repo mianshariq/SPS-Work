@@ -1,0 +1,65 @@
+---
+title: "HW1"
+author: "Shariq Mian"
+date: "2023-05-11"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+
+
+S_x = c(seq(-1,1,length.out=1000), seq(1,-1,length.out=1000), seq(-1,1,length.out=1000))
+S_y = c(seq(1,-1,length.out=1000), rep(-1,1000), seq(-1,1,length.out=1000))
+S_points = cbind(S_x, S_y)
+
+# Define points for the letter M
+M_x1 = seq(-1, -0.5, length.out=500)
+M_y1 = rep(1, 500)
+M_x2 = seq(-0.5, 0, length.out=500)
+M_y2 = seq(1, -1, length.out=500)
+M_x3 = seq(0, 0.5, length.out=500)
+M_y3 = seq(-1, 1, length.out=500)
+M_x4 = seq(0.5, 1, length.out=500)
+M_y4 = rep(1, 500)
+M_x = c(M_x1, M_x2, M_x3, M_x4)
+M_y = c(M_y1, M_y2, M_y3, M_y4)
+M_points = cbind(M_x, M_y)
+
+# Plot initial letters
+plot(S_y~S_x, xlim=c(-2,2), ylim=c(-2,2), asp=1, main="Initial Letters")
+lines(M_y~M_x)
+
+# Define transformation matrices
+shear_matrix = matrix(c(1,0.5,0,1), nrow=2)
+scale_matrix = matrix(c(1.02,0,0,1.02), nrow=2)
+rotation_matrix = matrix(c(cos(pi/18),-sin(pi/18),sin(pi/18),cos(pi/18)), nrow=2)
+projection_matrix = matrix(c(1,0,0.5,0), nrow=2)
+
+# Define list of transformation matrices
+matrix_list = list(shear_matrix, scale_matrix, rotation_matrix, projection_matrix)
+
+# Define list of names for transformations
+name_list = c("Shear", "Scale", "Rotation", "Projection")
+
+# Apply transformations to letters and plot
+par(mfrow=c(2,2))
+for (i in seq_along(matrix_list)) {
+  S_transformed = S_points %*% matrix_list[[i]]
+  M_transformed = M_points %*% matrix_list[[i]]
+  
+  plot(S_transformed[,1], S_transformed[,2], xlim=c(-2,2), ylim=c(-2,2), asp=1, 
+       main=name_list[i], xlab="", ylab="")
+  points(M_transformed[,1], M_transformed[,2], type="l")
+}
+
+```

@@ -1,0 +1,131 @@
+---
+title: "HW13"
+author: "Shariq Mian"
+date: "2023-05-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Calculus with R
+1. Use integration by substitution to solve the integral below.
+
+u=−7xdu=−7dx
+∫4e−7xdx
+∫−47eudu
+∫−47eudu
+−47∫eudu
+−47eu+C
+−47e−7x+C
+
+
+2. Biologists are treating a pond contaminated with bacteria. The level of contamination is changing at a rate of dNdt=−3150t4−220
+ bacteria per cubic centimeter per day, where t is the number of days since treatment began. Find a function N(t) to estimate the level of contamination if the level after 1 day was 6530 bacteria per cubic centimeter.
+
+
+dNdt=−3150t4−220
+
+3150∫1t4dt−220∫1dt
+
+3150∫−13t3−220t
+
+\bigg\frac{1050}{t^3}-220t+C
+
+N(1)=1050t3−220t+C
+
+6530=105013−220(1)+C
+
+6530=1050−220+C
+
+5700=C
+
+N(t)=1050t3−220t+5700
+
+
+
+3. Find the total area of the red rectangles in the figure below, where the equation of the line is f(x)=2x−9
+ [4.5,8.5].
+```{r}
+f <- function(x) 2*x-9
+paste0('The area is ',integrate(f,4.5,8.5)$value)
+```
+## [1] "The area is 16"
+4. Find the area of the region bounded by the graphs of the given equations.
+y = x2−2x−2
+, y=x+2
+
+Bounds: x2−2x−2=x+2
+ x2−3x−4=0
+ (x−4)(x+1)=0
+ x={4,−1}
+```{r}
+y_one <- function(x) x+2
+y_two <- function(x) x^2 - 2*x -2
+
+int_one <- integrate(y_one,-1,4)
+int_two <- integrate(y_two,-1,4)
+total_area <- int_one$value - int_two$value
+```
+## [1] "The area of the region bounded by interval [-1,4] is: 20.833"
+
+
+5. A beauty supply store expects to sell 110 flat irons during the next year. It costs $3.75 to store one flat iron for one year. There is a fixed cost of $8.25 for each order. Find the lot size and the number of orders per year that will minimize inventory costs.
+
+
+assumption: 2 flat irons stored on average x=flat iron orders c = cost function storagecosts=3.75∗x/2=1.875x
+  ordercosts=8.25∗110/x=907.5/x
+
+costfunction=1.875x+907.5/x
+
+c′(x)=1.875−907.5x2
+
+c′(x)=1.875x2=907.5
+
+x2=907.51.875
+
+x=(√907.51.875)
+
+x=22
+
+c=1.875∗22+907.5/22=$82.5
+
+lotsize=110/x=5
+
+
+
+6. Use integration by parts to solve the integral below.
+
+
+∫ln(9x)∗x6dx
+
+d(uv)=udv+vdu
+
+∫d(uv)=uv=∫udv+∫vdu
+
+∫udv=uv−∫vdu
+
+u=ln(9x)
+
+dvdx=x6
+
+du=99xdx=1xdx
+
+dv=x6dx
+
+v=17x7
+
+ln(9x)17x7−∫17x71xdx
+
+ln(9x)x77−x749−C
+
+x7(7ln(9x)−1)49+C
+
+
+7. Determine whether f ( x ) is a probability density function on the interval 1, e 6 . If not, determine the value of the definite integral.f(x)=16x
+```
+f_sev <- function(x) 1/(6*x)
+is_pdf <- integrate(f_sev,1,exp(6))
+```
+## [1] "Since the integral equals 1 from 1 to e^6 it is a probability density function."

@@ -1,0 +1,80 @@
+---
+title: "HW8"
+author: "Shariq Mian"
+date: "5/11/2023"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Q11 A company buys 100 lightbulbs, each of which has an exponential lifetime of 1000 hours. What is the expected time for the first of these bulbs to burn out? (See Exercise 10.)
+
+E(M)= u/n= 1000/100=10
+The expected time for the first bulbs to burn out it is 10hrs.
+
+
+Q14 Assume that X 1 and X 2 are independent random variables, each having an exponential density with parameter λ. Show that Z = X 1 − X 2 has density f Z (z) = (1/2)λe −λ|z|.
+Conditions:fZ(z)={(1/2)λe−λz,(1/2)λeλz,if z≥0,if z<0.
+
+fZ(z)=fX1+(−X2)(z)
+
+ifz≥0,x2=(x1−z)≥0andx1≥z,fZ(z)=∫∞zλ2eλ(z−2x1)dx=12λe−λz
+elseifz<0,x2=(x1−z)≥0andx1≥0,fZ(z)=∫∞zλ2eλ(z−2x1)dx=12λeλz
+
+Conditions:fZ(z)={(1/2)e−λz,,if z≥0
+                  (1/2)eλz,if z<0.
+
+1 Let X be a continuous random variable with mean µ = 10 and variance σ 2 = 100/3. Using Chebyshev’s Inequality, find an upper bound for the following probabilities.
+
+μ=10
+σ2=100/3
+σ=sqrt(100/3)
+P(|X−mu|≥kσ)≤1/k**2
+
+A. P (|X − 10| ≥ 2)
+kσ=2
+
+```{r}
+k.a <- round(2/sqrt((100/3)),3)
+k.a.b <- round(1/k.a^2,3)
+k.a.b
+```
+
+k=2/sqrt(100/3)
+P(|X−10|≥2)≤1k2= 8.353
+
+B. P (|X − 10| ≥ 5)
+kσ=5
+```{r}
+k.b <- round(5/sqrt((100/3)),3)
+k.b.b <- round(1/k.b^2,3)
+k.b.b
+```
+k=5/sqrt(100/3)
+P(|X−10|≥5)≤1k2= 1.333
+
+C. P (|X − 10| ≥ 9)
+kσ=9
+```{r}
+k.c <- round(9/sqrt((100/3)),3)
+k.c.b <- round(1/k.c^2,3)
+k.c.b
+```
+
+k=9/sqrt(100/3)
+P(|X−10|≥5)≤1k2= 0.411
+
+D. P (|X − 10| ≥ 20)
+kσ=20
+```{r}
+k.d <- round(20/sqrt((100/3)),3)
+k.d.b <- round(1/k.d^2,3)
+k.d.b
+```
+
+k=20/sqrt(100/3)
+P(|X−10|≥20)≤1k2= 0.083

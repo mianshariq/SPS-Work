@@ -1,0 +1,99 @@
+---
+title: "HW9"
+author: "Shariq Mian"
+date: "2023-05-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+page 363
+11 The price of one share of stock in the Pilsdorff Beer Company (see Exercise 8.2.12) is given by Yn on the nth day of the year. Finn observes that the differences Xn = Yn+1 − Yn appear to be independent random variables with a common distribution having mean µ = 0 and variance σ2 = 1/4. If Y1 = 100, estimate the probability that Y 365 is:
+
+Xn=Yn+1−Yn
+
+E[X]=μ=0
+
+σ2=14
+
+σ=(√14)=.5
+
+(a) ≥ 100.
+
+```{r}
+n=364
+yn <- 100
+yn_one <-100
+xn <- (yn-yn_one)/sqrt(364)
+mu <- 0
+v <- .25
+sigma <- round(sqrt(v),3)
+a <- pnorm(yn-yn_one,mu,sigma,lower.tail = F)
+```
+The probability that Y365
+ equals 100 is 0.5.
+
+
+(b) ≥ 110
+```{r}
+yn <- 110
+yn_one <-100
+xn <- (yn-yn_one)/sqrt(364)
+
+b <-pnorm(xn,mu,sigma,lower.tail = F)
+```
+
+The probability that Y365
+ equals 110 is 0.147.
+
+
+(c) ≥ 120.
+```{r}
+yn <- 120
+yn_one <-100
+xn <- (yn-yn_one)/sqrt(364)
+
+c <-pnorm(xn,mu,sigma,lower.tail = F)
+```
+The probability that Y365
+ equals 120 is 0.018.
+
+
+Calculate the expected value and variance of the binomial distribution using the moment generating function.
+μ=E[X]
+
+σ2=E[X2]−μ2
+
+MomentGeneratingfunction:
+M(t)=E(etX)=∑x∈Setxf(x)dx
+μ=E[X]=M′(t);o2=E[X2]−E[X]2=M′′(t)
+M(t)=[(1−p)+pet]n
+M′(t)=n[1−p+pet]n−1(pet)
+whent=0;
+μ=np=E[X]
+M′′(t)=n[1−p+pet]n−1(pet)+(pet)n(n−1)[1−p+pet]n−2(pet)
+whent=0;
+M′′(0)=n(n−1)p2+np
+σ2=E[X2]−E[X]2=np(1−p)
+
+Calculate the expected value and variance of the exponential distribution using the moment generating function.
+M(t)=∫∞0etxλe−xλdx=
+λ∫∞0e−x(λ−t)=
+
+whent=0;
+−λe−x(λ−t)λ−t∣∣∞0=
+
+M(t)=λλ−t
+
+E[X]=μ=M′(t);whent=0
+M′(0)=λ(λ−0)2=λλ2=
+E[X]=μ=M′(0)=1λ
+M′′(t)=2λ(λ−t)3
+
+M′′(0);whent=0
+
+M′′(0)=2λλ3=2λ2
+
+σ2=E(X2)−E(X)2=2λ2−1λ2=1λ2lot.

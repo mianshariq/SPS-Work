@@ -1,0 +1,105 @@
+---
+title: "HW7"
+author: "Shariq Mian"
+date: "5/11/2023"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Question 1.
+1. Let X1, X2, . . . , Xn be n mutually independent random variables, each of
+which is uniformly distributed on the integers from 1 to k. Let Y denote the
+minimum of the Xi’s. Find the distribution of Y.
+
+y= 1≤j≤k, ((k−j+1)**n−(k−j)**n)/kn
+
+Question 2
+2. Your organization owns a copier (future lawyers, etc.) or MRI (future doctors).This machine has a manufacturer’s expected ### lifetime of 10 years. This means that we expect one failure every ten years. (Include the probability statements and R Code for each part).
+```
+P(One failure in ten years)=1/10
+
+P(No failures in ten years)=9/10
+```
+a. What is the probability that the machine will fail after 8 years?. Provide also the
+expected value and standard deviation. Model as a geometric. (Hint: the probability is
+equivalent to not failing during the first 8 years.)
+
+
+```{r}
+p = 1/10
+q = 9/10
+n=8
+
+year = 9
+v = vector()
+for (k in 1:year) {
+ v[k] = p*(q^(k-1))
+ 
+}
+
+prob_ofeight =round(pgeom(n,p,lower.tail = F),3)
+
+E_x = 1/p
+
+sig = round(sqrt(1-p)/p,3)
+
+prob_ofeight
+E_x
+sig
+
+```
+
+b. What is the probability that the machine will fail after 8 years?. Provide also the
+expected value and standard deviation. Model as an exponential.
+
+```{r}
+lam = 1/10
+
+expo = round(exp(-n/10),3)
+rprob=round(pexp(p,n,lower.tail = F),3)
+
+gE_x = 1/lam
+
+var = 1/lam^2
+
+std = 1/lam
+gE_x
+var
+std
+```
+
+c. What is the probability that the machine will fail after 8 years?. Provide also the
+expected value and standard deviation. Model as a binomial. (Hint: 0 success in 8 years)
+
+```{r}
+pbin<- round(pbinom(q,n,p),3)
+
+bex <- round(n*p,3)
+
+b_stdx <- sqrt(n*p*q)
+
+bex
+b_stdx 
+```
+
+
+d. What is the probability that the machine will fail after 8 years?. Provide also the
+expected value and standard deviation. Model as a Poisson.
+
+
+```{r}
+plamb <- n*p
+pe_x <- plamb
+
+p_prob =round(ppois(q,plamb),3)
+p_std = round(sqrt(plamb),3)
+
+p_prob
+p_std

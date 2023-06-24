@@ -1,0 +1,117 @@
+---
+title: "HW12"
+author: "Shariq Mian"
+date: "2023-05-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+url <- 'https://github.com/mianshariq/SPS/raw/15791aaf54198f05264e55d1bce0efba5ef550b1/Data%20605/who.csv'
+who <- read.csv(url)
+head(who)
+```
+
+
+## 1
+Provide a scatterplot of LifeExp~TotExp, and run simple linear regression. Do not transform the variables. Provide and interpret the F statistics, R^2, standard error,and p-values only. Discuss whether the assumptions of simple linear regression met.
+
+```{r}
+plot(who$TotExp, who$LifeExp, xlab = "Total Expenditures", ylab = "Life Expectancy")
+```
+
+
+```{r}
+who_simple.lm <- lm(LifeExp ~ TotExp, data = who)
+```
+
+## Summary Statistics
+```{r}
+summary(who_simple.lm)
+```
+
+
+The F-table value for 1 regression degree of freedom and 120 residual degrees of freedom is 6.851. 
+Since the F-statistic from our model, which has 1 regression degree of freedom and 188 residual
+degrees of freedom, is 65.26, is much greater than the F-table value, the F-statistic suggests we 
+can reject the null hypothesis (a regression model with a zero coefficient). Similarly, the p-value 
+is well below typical α thresholds. The R2=0.2577 value is not strong, it tells us that 25.77% of 
+the variation in the data is accounted for in our model, which means the model does not strongly 
+fit the data. The standard error is a reasonably small percentage of the coefficient.
+
+## 2
+Raise life expectancy to the 4.6 power (i.e., LifeExp^4.6). Raise total expenditures to the 0.06 power (nearly a log transform, TotExp^.06). Plot LifeExp^4.6 as a function of TotExp^.06, and r re-run the simple regression model using the transformed variables. Provide and interpret the F statistics, R^2, standard error, and p-values. Which model is “better?”
+```{r}
+who$LifeExp4.6 <- (who$LifeExp)^4.6
+who$TotExp0.06 <- (who$TotExp)^0.06
+plot(who$TotExp0.06, who$LifeExp4.6, xlab = "Total Expenditures ^ 0.06", ylab = "Life Expectancy ^ 4.6")
+```
+
+# Run simple linear regression
+```{r}
+who_transformed.lm <- lm(LifeExp4.6 ~ TotExp0.06, data = who)
+summary(who_transformed.lm)
+```
+
+The F-statistic from our transformed model is 507.7 (same degrees of freedom as model from 1.)
+is much better vs. the F-table value than the prior model. Similarly, the p-value is even
+better. Finally, the R2=0.7298 value is dramatically superior to our model from 1. The 
+transformed model is the better model. The standard error is a reasonably small percentage of 
+the coefficient.
+## 3. 
+Using the results from 3, forecast life expectancy when TotExp^.06 =1.5. Then forecast life expectancy when TotExp^.06=2.5.
+
+Our model is LifeExp4.6=−736527910+620060216∗TotExp0.06
+
+```{r}
+le.transformed <- function(totexp) {
+  return((-736527910 + (620060216 * totexp))^(1/4.6))
+}
+
+# Example usage
+result1 <- le.transformed(1.5)
+result2 <- le.transformed(2.5)
+
+result1
+result2
+
+```
+
+## 4. 
+Build the following multiple regression model and interpret the F Statistics, R^2, standard error, and p-values. How good is the model? LifeExp = b0+b1 x PropMd + b2 x TotExp +b3 x PropMD x TotExp
+
+```{r}
+who_multiple.lm <- lm(who$LifeExp4.6 ~ who$PropMD + who$TotExp0.06 + who$PropMD:who$TotExp0.06)
+summary(who_multiple.lm)
+```
+The F-statistic from our multiple regression model is 180.3 which is well above the 
+F-table value of 3.949 for 3 regression degrees of freedom and 120 residual degrees of 
+freedom and α=0.01. Similarly, the p-value is strong for the model, and strong for all of 
+the variables except PropMD x TotExp0.06, which is still pretty good (0.0622). Finally, the 
+R2=0.7441 value is quite good. The standard error values for PropMD and PropMD x TotExp
+could be better.
+
+##5. 
+Forecast LifeExp when PropMD=.03 and TotExp = 14. Does this forecast seem realistic? Why or why not?
+Our model is LifeExp4.6=−724418697+(47273338389∗PropMD)+(604795792∗TotExp0.06)−(21214671638∗PropMD∗TotExp0.06)
+
+```{r}
+le.transformed_mutiple <- function(propmd, totexp) {
+  (-724418697 + (47273338389 * propmd) + (604795792 * totexp) - (21214671638 * propmd * totexp))^(1/4.6)
+}
+pmd <- 0.03
+te <- 14
+te4.6 <- te^0.06
+le.transformed_mutiple(pmd, te4.6)
+```
+
+The PropMD ratio being used for the prediction is only in-line with a few outlying data 
+points. If we plot PropMD against Life Expectancy, we can see the overwhelming majority
+of data points are between 0.000 and 0.005. Then we see two major outlier data points around
+0.325 and 0,035. I always get nervous when predicting values that are not in the range of the 
+values for an overwhelming percentage of observations. The Total Expenditure is also towards
+the bottom end of the range, though a lot of values exist in that range.
+plot(who$PropMD, who$LifeExp, xlab = "Proportion MDs", ylab = "Life Expectancy")
