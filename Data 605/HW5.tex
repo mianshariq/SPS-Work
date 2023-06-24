@@ -1,0 +1,395 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={DATA605 HW6},
+  pdfauthor={Shariq Mian},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{DATA605 HW6}
+\author{Shariq Mian}
+\date{3/5/2023}
+
+\begin{document}
+\maketitle
+
+\hypertarget{question-1}{%
+\subsection{Question 1}\label{question-1}}
+
+A bag contains 5 green and 7 red jellybeans. How many ways can 5
+jellybeans be withdrawn from the bag so that the number of green ones
+withdrawn will be less than 2?
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{Q1}\OtherTok{=}\FunctionTok{choose}\NormalTok{(}\DecValTok{5}\NormalTok{,}\DecValTok{1}\NormalTok{)}\SpecialCharTok{*}\FunctionTok{choose}\NormalTok{(}\DecValTok{7}\NormalTok{,}\DecValTok{4}\NormalTok{)}\SpecialCharTok{+}\FunctionTok{choose}\NormalTok{(}\DecValTok{5}\NormalTok{,}\DecValTok{0}\NormalTok{)}\SpecialCharTok{*}\FunctionTok{choose}\NormalTok{(}\DecValTok{7}\NormalTok{,}\DecValTok{5}\NormalTok{)}
+\NormalTok{Q1 }\CommentTok{\#5C1∗7C4+5C0∗7C5=196}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 196
+\end{verbatim}
+
+\hypertarget{question}{%
+\subsection{Question}\label{question}}
+
+A certain congressional committee consists of 14 senators and 13
+representatives. How many ways can a subcommittee of 5 be formed if at
+least 4 of the members must be representatives?
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{Q2 }\OtherTok{=} \FunctionTok{choose}\NormalTok{(}\DecValTok{13}\NormalTok{,}\DecValTok{4}\NormalTok{)}\SpecialCharTok{*}\FunctionTok{choose}\NormalTok{(}\DecValTok{14}\NormalTok{,}\DecValTok{1}\NormalTok{)}\SpecialCharTok{+}\FunctionTok{choose}\NormalTok{(}\DecValTok{13}\NormalTok{,}\DecValTok{5}\NormalTok{)}\SpecialCharTok{+}\FunctionTok{choose}\NormalTok{(}\DecValTok{14}\NormalTok{,}\DecValTok{0}\NormalTok{)}
+\NormalTok{Q2 }\CommentTok{\#11298 Ways.}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 11298
+\end{verbatim}
+
+Question 3
+
+If a coin is tossed 5 times, and then a standard six-sided die is rolled
+2 times, and finally a group of three cards are drawn from a standard
+deck of 52 cards without replacement, how many different outcomes are
+possible?
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{Q3 }\OtherTok{=} \DecValTok{2}\SpecialCharTok{\^{}}\DecValTok{5}\SpecialCharTok{*}\DecValTok{6}\SpecialCharTok{\^{}}\DecValTok{2}\SpecialCharTok{*}\DecValTok{52}\SpecialCharTok{*}\DecValTok{51}\SpecialCharTok{*}\DecValTok{50}
+\NormalTok{Q3}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 152755200
+\end{verbatim}
+
+\hypertarget{question-4}{%
+\subsection{Question 4}\label{question-4}}
+
+3 cards are drawn from a standard deck without replacement. What is the
+probability that at least one of the cards drawn is a 3? Express your
+answer as a fraction or a decimal number rounded to four decimal places.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{three }\OtherTok{=} \FunctionTok{round}\NormalTok{(}\DecValTok{1}\SpecialCharTok{{-}} \DecValTok{48}\SpecialCharTok{/}\DecValTok{52}\SpecialCharTok{*}\DecValTok{47}\SpecialCharTok{/}\DecValTok{51}\SpecialCharTok{*}\DecValTok{46}\SpecialCharTok{/}\DecValTok{50}\NormalTok{,}\DecValTok{4}\NormalTok{)}
+\NormalTok{totals }\OtherTok{=} \FunctionTok{choose}\NormalTok{(}\DecValTok{52}\NormalTok{,}\DecValTok{3}\NormalTok{)}
+\NormalTok{not\_three }\OtherTok{=} \FunctionTok{choose}\NormalTok{(}\DecValTok{48}\NormalTok{,}\DecValTok{3}\NormalTok{)}
+\NormalTok{pthree }\OtherTok{=} \FunctionTok{round}\NormalTok{(}\DecValTok{1}\SpecialCharTok{{-}}\NormalTok{not\_three}\SpecialCharTok{/}\NormalTok{totals,}\DecValTok{4}\NormalTok{)}
+\NormalTok{pthree}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.2174
+\end{verbatim}
+
+\hypertarget{question-5}{%
+\subsection{Question 5}\label{question-5}}
+
+Lorenzo is picking out some movies to rent, and he is primarily
+interested in documentaries and mysteries. He has narrowed down his
+selections to 17 documentaries and 14 mysteries.
+
+\hypertarget{step-1.-how-many-different-combinations-of-5-movies-can-he-rent}{%
+\subsubsection{Step 1. How many different combinations of 5 movies can
+he
+rent?}\label{step-1.-how-many-different-combinations-of-5-movies-can-he-rent}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{Q5a}\OtherTok{\textless{}{-}}\FunctionTok{choose}\NormalTok{(}\DecValTok{31}\NormalTok{,}\DecValTok{5}\NormalTok{)}
+\NormalTok{Q5a}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 169911
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{m1}\OtherTok{=}\FunctionTok{choose}\NormalTok{(}\DecValTok{14}\NormalTok{,}\DecValTok{1}\NormalTok{)}\SpecialCharTok{*}\FunctionTok{choose}\NormalTok{(}\DecValTok{17}\NormalTok{,}\DecValTok{4}\NormalTok{)}
+\NormalTok{m1}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 33320
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{m2}\OtherTok{=}\FunctionTok{choose}\NormalTok{(}\DecValTok{14}\NormalTok{,}\DecValTok{2}\NormalTok{)}\SpecialCharTok{*}\FunctionTok{choose}\NormalTok{(}\DecValTok{17}\NormalTok{,}\DecValTok{3}\NormalTok{)}
+\NormalTok{m2}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 61880
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{m3}\OtherTok{=} \FunctionTok{choose}\NormalTok{(}\DecValTok{14}\NormalTok{,}\DecValTok{3}\NormalTok{)}\SpecialCharTok{*}\FunctionTok{choose}\NormalTok{(}\DecValTok{17}\NormalTok{,}\DecValTok{2}\NormalTok{)}
+\NormalTok{m3}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 49504
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{m4}\OtherTok{=}\FunctionTok{choose}\NormalTok{(}\DecValTok{14}\NormalTok{,}\DecValTok{4}\NormalTok{)}\SpecialCharTok{*}\FunctionTok{choose}\NormalTok{(}\DecValTok{17}\NormalTok{,}\DecValTok{1}\NormalTok{)}
+\NormalTok{m4}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 17017
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{m5}\OtherTok{=}\FunctionTok{choose}\NormalTok{(}\DecValTok{14}\NormalTok{,}\DecValTok{5}\NormalTok{)}\SpecialCharTok{*}\FunctionTok{choose}\NormalTok{(}\DecValTok{17}\NormalTok{,}\DecValTok{0}\NormalTok{)}
+\NormalTok{m5}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 2002
+\end{verbatim}
+
+\hypertarget{step-2.-how-many-different-combinations-of-5-movies-can-he-rent-if-he-wants-at-least-one-mystery}{%
+\subsubsection{Step 2. How many different combinations of 5 movies can
+he rent if he wants at least one
+mystery?}\label{step-2.-how-many-different-combinations-of-5-movies-can-he-rent-if-he-wants-at-least-one-mystery}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{Q5b}\OtherTok{\textless{}{-}}\NormalTok{ m1}\SpecialCharTok{+}\NormalTok{m2}\SpecialCharTok{+}\NormalTok{m3}\SpecialCharTok{+}\NormalTok{m4}\SpecialCharTok{+}\NormalTok{m5}
+\NormalTok{Q5b}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 163723
+\end{verbatim}
+
+\hypertarget{question-6}{%
+\subsection{Question 6}\label{question-6}}
+
+In choosing what music to play at a charity fund raising event, Cory
+needs to have an equal number of symphonies from Brahms, Haydn, and
+Mendelssohn. If he is setting up a schedule of the 9 symphonies to be
+played, and he has 4 Brahms, 104 Haydn, and 17 Mendelssohn symphonies
+from which to choose, how many different schedules are possible? Express
+your answer in scientific notation rounding to the hundredths place.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{Q6 }\OtherTok{\textless{}{-}} \FunctionTok{format}\NormalTok{(}\FunctionTok{signif}\NormalTok{(}\DecValTok{104}\SpecialCharTok{*}\DecValTok{103}\SpecialCharTok{*}\DecValTok{101}\SpecialCharTok{*}\DecValTok{17}\SpecialCharTok{*}\DecValTok{16}\SpecialCharTok{*}\DecValTok{15}\SpecialCharTok{*}\DecValTok{4}\SpecialCharTok{*}\DecValTok{3}\SpecialCharTok{*}\DecValTok{2}\NormalTok{,}\DecValTok{3}\NormalTok{),}\AttributeTok{scientific =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{Q6}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "1.06e+11"
+\end{verbatim}
+
+\hypertarget{question-7}{%
+\subsection{Question 7}\label{question-7}}
+
+An English teacher needs to pick 13 books to put on his reading list for
+the next school year, and he needs to plan the order in which they
+should be read. He has narrowed down his choices to 6 novels, 6 plays, 7
+poetry books, and 5 nonfiction books.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{nf0 }\OtherTok{\textless{}{-}} \DecValTok{19}\SpecialCharTok{*}\DecValTok{18}\SpecialCharTok{*}\DecValTok{17}\SpecialCharTok{*}\DecValTok{16}\SpecialCharTok{*}\DecValTok{15}\SpecialCharTok{*}\DecValTok{14}\SpecialCharTok{*}\DecValTok{13}\SpecialCharTok{*}\DecValTok{12}\SpecialCharTok{*}\DecValTok{11}\SpecialCharTok{*}\DecValTok{10}\SpecialCharTok{*}\DecValTok{9}\SpecialCharTok{*}\DecValTok{8}\SpecialCharTok{*}\DecValTok{7}
+\NormalTok{nf1 }\OtherTok{\textless{}{-}} \DecValTok{19}\SpecialCharTok{*}\DecValTok{18}\SpecialCharTok{*}\DecValTok{17}\SpecialCharTok{*}\DecValTok{16}\SpecialCharTok{*}\DecValTok{15}\SpecialCharTok{*}\DecValTok{14}\SpecialCharTok{*}\DecValTok{13}\SpecialCharTok{*}\DecValTok{12}\SpecialCharTok{*}\DecValTok{11}\SpecialCharTok{*}\DecValTok{10}\SpecialCharTok{*}\DecValTok{9}\SpecialCharTok{*}\DecValTok{8}\SpecialCharTok{*}\DecValTok{6}
+\NormalTok{nf2 }\OtherTok{\textless{}{-}} \DecValTok{19}\SpecialCharTok{*}\DecValTok{18}\SpecialCharTok{*}\DecValTok{17}\SpecialCharTok{*}\DecValTok{16}\SpecialCharTok{*}\DecValTok{15}\SpecialCharTok{*}\DecValTok{14}\SpecialCharTok{*}\DecValTok{13}\SpecialCharTok{*}\DecValTok{12}\SpecialCharTok{*}\DecValTok{11}\SpecialCharTok{*}\DecValTok{10}\SpecialCharTok{*}\DecValTok{9}\SpecialCharTok{*}\DecValTok{6}\SpecialCharTok{*}\DecValTok{5}
+\NormalTok{nf3 }\OtherTok{\textless{}{-}} \DecValTok{19}\SpecialCharTok{*}\DecValTok{18}\SpecialCharTok{*}\DecValTok{17}\SpecialCharTok{*}\DecValTok{16}\SpecialCharTok{*}\DecValTok{15}\SpecialCharTok{*}\DecValTok{14}\SpecialCharTok{*}\DecValTok{13}\SpecialCharTok{*}\DecValTok{12}\SpecialCharTok{*}\DecValTok{11}\SpecialCharTok{*}\DecValTok{10}\SpecialCharTok{*}\DecValTok{6}\SpecialCharTok{*}\DecValTok{5}\SpecialCharTok{*}\DecValTok{4}
+\NormalTok{nf4 }\OtherTok{\textless{}{-}} \DecValTok{19}\SpecialCharTok{*}\DecValTok{18}\SpecialCharTok{*}\DecValTok{17}\SpecialCharTok{*}\DecValTok{16}\SpecialCharTok{*}\DecValTok{15}\SpecialCharTok{*}\DecValTok{14}\SpecialCharTok{*}\DecValTok{13}\SpecialCharTok{*}\DecValTok{12}\SpecialCharTok{*}\DecValTok{11}\SpecialCharTok{*}\DecValTok{6}\SpecialCharTok{*}\DecValTok{5}\SpecialCharTok{*}\DecValTok{4}\SpecialCharTok{*}\DecValTok{3}
+\NormalTok{Q7 }\OtherTok{\textless{}{-}} \FunctionTok{format}\NormalTok{(}\FunctionTok{signif}\NormalTok{(nf0}\SpecialCharTok{+}\NormalTok{nf1}\SpecialCharTok{+}\NormalTok{nf2}\SpecialCharTok{+}\NormalTok{nf3}\SpecialCharTok{+}\NormalTok{nf4,}\DecValTok{3}\NormalTok{),}\AttributeTok{scientific=}\ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{Q7}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "4.57e+14"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{Q7a }\OtherTok{\textless{}{-}} \FunctionTok{format}\NormalTok{(}\FunctionTok{signif}\NormalTok{(}\DecValTok{6}\SpecialCharTok{*}\DecValTok{5}\SpecialCharTok{*}\DecValTok{4}\SpecialCharTok{*}\DecValTok{3}\SpecialCharTok{*}\DecValTok{2}\SpecialCharTok{*}\DecValTok{1}\SpecialCharTok{*}\DecValTok{18}\SpecialCharTok{*}\DecValTok{17}\SpecialCharTok{*}\DecValTok{16}\SpecialCharTok{*}\DecValTok{15}\SpecialCharTok{*}\DecValTok{14}\SpecialCharTok{*}\DecValTok{13}\SpecialCharTok{*}\DecValTok{12}\NormalTok{,}\DecValTok{3}\NormalTok{),}\AttributeTok{scientific =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{Q7a}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "1.15e+11"
+\end{verbatim}
+
+\hypertarget{question-8}{%
+\subsection{Question 8}\label{question-8}}
+
+Zane is planting trees along his driveway, and he has 5 sycamores and 5
+cypress trees to plant in one row. What is the probability that he
+randomly plants the trees so that all 5 sycamores are next to each other
+and all 5 cypress trees are next to each other? Express your answer as a
+fraction or a decimal number rounded to four decimal places.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ways }\OtherTok{\textless{}{-}}\DecValTok{2}
+\NormalTok{totaltrees }\OtherTok{\textless{}{-}} \DecValTok{10}
+\NormalTok{sycamores }\OtherTok{\textless{}{-}}\DecValTok{5}
+\NormalTok{cypress }\OtherTok{\textless{}{-}} \DecValTok{5}
+\NormalTok{Q8 }\OtherTok{\textless{}{-}} \FunctionTok{round}\NormalTok{(ways}\SpecialCharTok{/}\NormalTok{(}\FunctionTok{factorial}\NormalTok{(totaltrees)}\SpecialCharTok{/}\NormalTok{(}\FunctionTok{factorial}\NormalTok{(sycamores)}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{)),}\DecValTok{4}\NormalTok{)}
+\NormalTok{Q8}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.0079
+\end{verbatim}
+
+\hypertarget{question-9}{%
+\subsection{Question 9}\label{question-9}}
+
+If you draw a queen or lower from a standard deck of cards, I will pay
+you \$4. If not, you pay me \$16. (Aces are considered the highest card
+in the deck.)
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lessq }\OtherTok{\textless{}{-}} \DecValTok{44}\SpecialCharTok{/}\DecValTok{52}
+\NormalTok{win }\OtherTok{\textless{}{-}} \DecValTok{4}
+\NormalTok{lose }\OtherTok{\textless{}{-}} \SpecialCharTok{{-}}\DecValTok{16}
+\NormalTok{notlessq }\OtherTok{\textless{}{-}}\DecValTok{8}\SpecialCharTok{/}\DecValTok{52}
+\NormalTok{Q9 }\OtherTok{\textless{}{-}} \FunctionTok{round}\NormalTok{(lessq}\SpecialCharTok{*}\NormalTok{win}\SpecialCharTok{+}\NormalTok{notlessq}\SpecialCharTok{*}\NormalTok{lose,}\DecValTok{2}\NormalTok{)}
+\NormalTok{Q9 }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.92
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{Q9a }\OtherTok{\textless{}{-}} \FunctionTok{round}\NormalTok{(lessq}\SpecialCharTok{*}\DecValTok{833}\SpecialCharTok{*}\DecValTok{4} \SpecialCharTok{+}\NormalTok{ notlessq}\SpecialCharTok{*}\DecValTok{833}\SpecialCharTok{*}\NormalTok{(}\SpecialCharTok{{-}}\DecValTok{16}\NormalTok{),}\DecValTok{2}\NormalTok{)}
+\NormalTok{Q9a}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 768.92
+\end{verbatim}
+
+\end{document}

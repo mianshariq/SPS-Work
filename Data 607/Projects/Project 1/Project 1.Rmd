@@ -1,0 +1,136 @@
+---
+title: "Project1"
+author: "Shariq Mian"
+date: "9/19/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Libraries
+
+## Importing Libraries
+
+```{r, warning=FALSE}
+library(stringr)
+library(DT)
+library(ggplot2)
+library(tidyverse)
+```
+
+# Loading
+Reading the text file from Github
+
+```{r}
+df = readr::read_lines('https://github.com/mianshariq/SPS/raw/0ac39799e67b32b6c75564847778f012ffa5faa4/Data%20607/Projects/Project%201/ratings.txt')
+```
+
+#  Cleaning
+Removing the dashes and empty rows and first two lines
+```{r}
+df1 = str_remove_all(string = df, pattern = "^-+$")     #remove the dashes
+df1 = df1[sapply(df1, nchar) > 0]                     # remove the empty rows
+df1 = df1[-c(0:2)]                                    # remove the first two lines headers
+```
+Spliting data into even odd so I can contcat into one row.
+```{r}
+df1_odd <- df1[seq(1, 128, 2)]
+df1_even <- df1[seq(2, 128, 2)]
+```
+
+Concat and remove slashes from data
+```{r}
+df2 = paste(df1_odd, df1_even, sep = " ")
+df2 = str_replace_all(string = df2, pattern = "/", "|")
+```
+
+Using Regex for string minupulation and extraction
+```{r, warning=FALSE}
+name = str_extract(df2, "[[:alpha:]]{2,}([[:blank:]][[:alpha:]]{1,}){1,}")
+head(name,3)
+states = str_extract(df1_even, "[[:alpha:]]{2}")
+head(states,3)
+points = str_extract(df2, "[[:digit:]]+\\.[[:digit:]]")
+points = as.numeric(as.character(points))
+head(points,3)
+pre_ratings = str_extract(df2, ".\\: \\s?[[:digit:]]{3,4}")
+pre_ratings = as.numeric(str_extract(pre_ratings, "\\(?[0-9,.]+\\)?"))
+id <- as.integer(str_extract(df2, "\\d+"))
+id<-subset(c(id),c(id)<65)
+head(id,3)
+opp_num<-str_extract_all(str_extract_all(df2,"\\d+\\|"),"\\d+")
+opp_num<-subset(c(opp_num),c(opp_num)!="0")
+opp_num[1]
+```
+
+Using loop to get the average of the opponnent.
+```{r}
+OppAvgRating <- list()
+
+for (i in 1:length(opp_num)){
+  OppAvgRating[i]<- mean(pre_ratings[as.numeric(unlist(opp_num[id[i]]))])
+  }
+
+opp_avg <- lapply(OppAvgRating, as.numeric)
+opp_avg <- lapply(OppAvgRating, as.numeric)
+opp_avg <- data.frame(unlist(opp_avg))
+opp_avg = round(opp_avg)
+opp_avg
+```
+
+# Creating Data Frame
+Creating DF of the 5 columns needed.
+```{r}
+df3=data.frame(name,states,points,pre_ratings,opp_avg)
+datatable(df3, extensions = 'Scroller', options = list(scrollY = 500, scroller = TRUE ))
+```
+
+# Visualization
+Creating plot of states. 
+```{r}
+ggplot()+
+  geom_bar(data = df3, aes(states))+
+  coord_flip()
+```
+
+Creating bins for ratings to get a better view of the ratings as a group.
+```{r}
+df3$ratingbins=cut(df3$pre_ratings, 15, include.lowest=TRUE, dig.lab = 4)
+ggplot()+
+geom_bar(data = df3, aes(ratingbins))+
+coord_flip()
+```
+
+Creating plot of ratings vs avg opponent ratings, you can see if you average opponent is great and you have many points, that means your ratings is high
+```{r, fig.width=15}
+ggplot(df3, aes(pre_ratings, unlist.opp_avg., color = ratingbins)) +
+geom_point(aes(size = points))+
+ggtitle('Pre-rating Vs. Avg Opponent Rating')+
+xlab('Pre-rating')+
+ylab('unlist.opp_avg')
+```
+Displaying the data
+```{r}
+head(df3)
+```
+```{r}
+#Calculating expected score for the players
+df3$elo_score<- (1 / (1 + 10^((df3$pre_ratings - df3$unlist.opp_avg.)/400)))
+# Assuming The rating of player is updated using the formula rating1 = rating1 + K*(Actual Score – Expected score_ where 'k' weighting factor is assumed as '20'
+df3$elo_pts <-  df3$pre_ratings  + 20*(1-df3$elo_score)
+
+#to compare with final score, let's fetch it from raw data
+
+df3$diff <- df3$pre_ratings - df3$elo_pts
+df3
+
+
+
+```
+
+# Extracting CSV
+```{r}
+write.csv(df3, "elo_chess.csv", row.names = FALSE)
+```

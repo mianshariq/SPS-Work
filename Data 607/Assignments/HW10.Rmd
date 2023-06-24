@@ -1,0 +1,407 @@
+---
+title: "Assignment 10"
+author: "Shariq Mian"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## ASSIGNMENT 10 
+
+In Text Mining with R, Chapter 2 looks at Sentiment Analysis.  In this assignment, you should start by getting the primary example code from chapter 2 working in an R Markdown document.  You should provide a citation to this base code.  You’re then asked to extend the code in two ways:
+
+Work with a different corpus of your choosing, and
+Incorporate at least one additional sentiment lexicon (possibly from another R package that you’ve found through research).
+As usual, please submit links to both an .Rmd file posted in your GitHub repository and to your code on rpubs.com.  You make work on a small team on this assignment.
+
+## Approach
+After researching around there are many ways I can approach this. I first tried using the gutenbergr library to get a different corpus and there were many novels and text available. However I wanted to try some thing different. I wanted to try to do sentimental analysis either some Financial data, Tweets or emails. The easeist to get access to was Financial Data. I tried accessing finance data via gutenbergr library but there were only novals and text available on those subjects so instead I decided to download Amazon 10K and upload it to Github to be used as my corpus.
+
+## Libraries
+
+```{r}
+library(tidytext)
+library(textdata)
+library(janeaustenr)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(tidyr)
+library(wordcloud)
+```
+
+## Base Code from Text Mining with R
+
+Here we are reattempting to recreate the example from Chapter 2 of Text Mining with R.
+
+## Citation
+Robinson, Julia Silge and David. “1 The Tidy Text Format: Text Mining with R.” 1 The Tidy Text Format | Text Mining with R, https://www.tidytextmining.com/tidytext.html. 
+
+```{r}
+get_sentiments("afinn")
+```
+```{r}
+get_sentiments("bing")
+```
+
+```{r}
+get_sentiments("nrc")
+```
+
+```{r}
+tidy_books <- austen_books() %>%
+  group_by(book) %>%
+  mutate(
+    linenumber = row_number(),
+    chapter = cumsum(str_detect(text, 
+                                regex("^chapter [\\divxlc]", 
+                                      ignore_case = TRUE)))) %>%
+  ungroup() %>%
+  unnest_tokens(word, text)
+```
+
+
+```{r}
+nrc_joy <- get_sentiments("nrc") %>% 
+  filter(sentiment == "joy")
+
+tidy_books %>%
+  filter(book == "Emma") %>%
+  inner_join(nrc_joy) %>%
+  count(word, sort = TRUE)
+
+```
+
+```{r}
+jane_austen_sentiment <- tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(book, index = linenumber %/% 80, sentiment) %>%
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>% 
+  mutate(sentiment = positive - negative)
+
+```
+
+
+```{r}
+
+ggplot(jane_austen_sentiment, aes(index, sentiment, fill = book)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~book, ncol = 2, scales = "free_x")
+
+```
+
+```{r}
+pride_prejudice <- tidy_books %>% 
+  filter(book == "Pride & Prejudice")
+
+pride_prejudice
+```
+
+```{r}
+afinn <- pride_prejudice %>% 
+  inner_join(get_sentiments("afinn")) %>% 
+  group_by(index = linenumber %/% 80) %>% 
+  summarise(sentiment = sum(value)) %>% 
+  mutate(method = "AFINN")
+```
+
+```{r}
+bing_and_nrc <- bind_rows(
+  pride_prejudice %>% 
+    inner_join(get_sentiments("bing")) %>%
+    mutate(method = "Bing et al."),
+  pride_prejudice %>% 
+    inner_join(get_sentiments("nrc") %>% 
+                 filter(sentiment %in% c("positive", 
+                                         "negative"))
+    ) %>%
+    mutate(method = "NRC")) %>%
+  count(method, index = linenumber %/% 80, sentiment) %>%
+  pivot_wider(names_from = sentiment,
+              values_from = n,
+              values_fill = 0) %>% 
+  mutate(sentiment = positive - negative)
+```
+
+```{r}
+bind_rows(afinn, 
+          bing_and_nrc) %>%
+  ggplot(aes(index, sentiment, fill = method)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~method, ncol = 1, scales = "free_y")
+```
+
+```{r}
+bing_word_counts <- tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  ungroup()
+
+bing_word_counts %>%
+  group_by(sentiment) %>%
+  slice_max(n, n = 10) %>% 
+  ungroup() %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(n, word, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~sentiment, scales = "free_y") +
+  labs(x = "Contribution to sentiment",
+       y = NULL)
+```
+
+```{r}
+tidy_books %>%
+  anti_join(stop_words) %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+```
+
+
+```{r}
+library(reshape2)
+
+tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = c("gray20", "gray80"),
+                   max.words = 100)
+```
+
+```{r}
+p_and_p_sentences <- tibble(text = prideprejudice) %>% 
+  unnest_tokens(sentence, text, token = "sentences")
+```
+
+```{r}
+p_and_p_sentences$sentence[2]
+```
+
+```{r}
+austen_chapters <- austen_books() %>%
+  group_by(book) %>%
+  unnest_tokens(chapter, text, token = "regex", 
+                pattern = "Chapter|CHAPTER [\\dIVXLC]") %>%
+  ungroup()
+
+austen_chapters %>% 
+  group_by(book) %>% 
+  summarise(chapters = n())
+```
+
+```{r}
+bingnegative <- get_sentiments("bing") %>% 
+  filter(sentiment == "negative")
+
+wordcounts <- tidy_books %>%
+  group_by(book, chapter) %>%
+  summarize(words = n())
+
+tidy_books %>%
+  semi_join(bingnegative) %>%
+  group_by(book, chapter) %>%
+  summarize(negativewords = n()) %>%
+  left_join(wordcounts, by = c("book", "chapter")) %>%
+  mutate(ratio = negativewords/words) %>%
+  filter(chapter != 0) %>%
+  slice_max(ratio, n = 1) %>% 
+  ungroup()
+```
+
+
+## Amazon 10K Corpus
+
+I took a different approach regarding the New Corpus. I couldnt find a Financial Statement on the Gutenbergr library so Instead I downladed
+Amazon 10K which was released on 29OCT21. Amazon had performed below Analysts expectation and I wanted apply loughran lexicon to Amazon 10K.
+
+https://ir.aboutamazon.com/sec-filings/sec-filings-details/default.aspx?FilingId=15311356
+
+```{r message=FALSE}
+library(gutenbergr)
+
+Amazon10K= "https://github.com/mianshariq/SPS/raw/10668f542cef868339300d9278f69bf6cd12dcf2/Data%20607/Assignments/Amazon10k.txt"
+Amazon10K=readLines(Amazon10K)
+Amazon10K <- tibble(text = Amazon10K)
+Amazon10K
+
+```
+
+
+```{r message=FALSE}
+
+
+Count_Amazon10K <- Amazon10K[c(1:nrow(Amazon10K)),]
+
+Amazon10K_Chapters <- Count_Amazon10K %>% 
+  filter(text != "") %>%
+  mutate(linenumber = row_number(),
+         chapter = cumsum(str_detect(text, regex("CHAPTER [\\dIVXLC]", ignore_case =  TRUE)))) 
+Amazon10K_Chapters
+
+```
+
+## Loughran Lexicon 
+According to https://sraf.nd.edu/textual-analysis/resources/ loughran lexicon is used for Accounting and Fiannce. Intrestingally it stated that "A growing literature finds significant relations between financial phenomena (e.g., stock returns, commodity prices, bankruptcies, governance) and the sentiment of financial disclosures as measured by word classifications such as those provided below."
+The sintements used to describe the sentiments are: "negative", "positive", "litigious", "uncertainty", "constraining", or "superfluous"
+
+```{r message=FALSE}
+get_sentiments("loughran")
+```
+
+```{r message=FALSE}
+Amazon10K_tidy <- Amazon10K_Chapters %>% 
+  unnest_tokens(word, text) %>% 
+  inner_join(get_sentiments("loughran")) %>% 
+  count(word, sentiment, sort = TRUE) %>%
+  group_by(sentiment) %>%
+  top_n(10) %>% ungroup() %>% mutate(word = reorder(word, n)) %>%
+  anti_join(stop_words)
+
+names(Amazon10K_tidy)<-c("word", "sentiment", "Freq")
+Amazon10K_tidy
+```
+
+```{r message=FALSE}
+ggplot(data = Amazon10K_tidy, aes(x = word, y = Freq, fill = sentiment)) + 
+  geom_bar(stat = "identity") + coord_flip() + facet_wrap(~sentiment, scales = "free_y") +
+  labs(y = "Contribution to sentiment",x = NULL)
+```
+
+```{r message=FALSE}
+Amazon10K_tidy %>%
+  anti_join(stop_words) %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+  
+```
+
+```{r message=FALSE}
+Amazon10K_tidy %>%
+  inner_join(get_sentiments("loughran")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = c("gray20", "gray80"),
+                   max.words = 100)
+
+```
+
+
+## Comparing to Different Quarter 10K
+
+I want to compare the sentimnet to a different Quarter and see whether there is a difference there as the most recent 
+quarter results were lover than expected. 
+You can see a small difference in the sentiments and that is predictable as Amazon is a big company and they dont want to spook
+their investors becasue ther didnt meet expectations in their last Quarter.
+
+```{r message=FALSE}
+Amazon10KQ2= "https://github.com/mianshariq/SPS/raw/3790a3bf2750dd6cb34548d50cc6b3507eb0e904/Data%20607/Assignments/Amazon10KQ3.txt"
+Amazon10KQ2 =readLines(Amazon10KQ2)
+Amazon10KQ2 <- tibble(text = Amazon10KQ2)
+Amazon10KQ2
+
+```
+
+```{r message=FALSE}
+
+
+Count_Amazon10KQ2 <- Amazon10KQ2[c(1:nrow(Amazon10KQ2)),]
+
+Amazon10KQ2_Chapters <- Count_Amazon10KQ2 %>% 
+  filter(text != "") %>%
+  mutate(linenumber = row_number(),
+         chapter = cumsum(str_detect(text, regex("CHAPTER [\\dIVXLC]", ignore_case =  TRUE)))) 
+
+```
+
+```{r message=FALSE}
+Amazon10KQ2_tidy <- Amazon10KQ2_Chapters %>% 
+  unnest_tokens(word, text) %>% 
+  inner_join(get_sentiments("loughran")) %>% 
+  count(word, sentiment, sort = TRUE) %>%
+  group_by(sentiment) %>%
+  top_n(10) %>% ungroup() %>% mutate(word = reorder(word, n)) %>%
+  anti_join(stop_words)
+
+names(Amazon10KQ2_tidy)<-c("word", "sentiment", "Freq")
+Amazon10K_tidy
+Amazon10KQ2_tidy
+```
+
+```{r message=FALSE}
+ggplot(data = Amazon10KQ2_tidy, aes(x = word, y = Freq, fill = sentiment)) + 
+  geom_bar(stat = "identity") + coord_flip() + facet_wrap(~sentiment, scales = "free_y") +
+  labs(y = "Contribution to sentiment",x = NULL)
+```
+
+```{r message=FALSE}
+Amazon10KQ2_tidy %>%
+  anti_join(stop_words) %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+  
+```
+
+```{r message=FALSE}
+Amazon10K_tidy %>%
+  inner_join(get_sentiments("loughran")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = c("gray20", "gray80"),
+                   max.words = 100)
+
+```
+
+
+
+
+## Applying bing Sentiment to Corpus
+
+I want to apply the bing sentiment to pur corpus. This will classify between Positive and Negative. It shopud be interesting to see how some
+of the words are classified since its a more technical document.
+```{r message=FALSE}
+Amazon10K_tidy <- Amazon10K_Chapters %>% 
+  unnest_tokens(word, text) %>% 
+  inner_join(get_sentiments("bing")) %>% 
+  count(word, sentiment, sort = TRUE) %>%
+  group_by(sentiment) %>%
+  top_n(10) %>% ungroup() %>% mutate(word = reorder(word, n)) %>%
+  anti_join(stop_words)
+
+names(Amazon10K_tidy)<-c("word", "sentiment", "Freq")
+```
+## Results for bing sentiment
+
+Its interesting to see fulfillment as a postive here. However we now that fulfillment is the centers Amazon use as their warehouse.
+
+```{r message=FALSE}
+ggplot(data = Amazon10K_tidy, aes(x = word, y = Freq, fill = sentiment)) + 
+  geom_bar(stat = "identity") + coord_flip() + facet_wrap(~sentiment, scales = "free_y") +
+  labs(y = "Contribution to sentiment",x = NULL)
+```
+
+```{r message=FALSE}
+Amazon10K_tidy %>%
+  anti_join(stop_words) %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+  
+```
+
+```{r message=FALSE}
+Amazon10K_tidy %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = c("gray20", "gray80"),
+                   max.words = 100)
+
+```
+
+## Conclusion 
+Sentiment analysis provides a way to make it easier to show hoe opinions are expressed in texts or whether a text is classified to a certain attitude. In our Amazon 10K example we can use sentiment analysis to understand how a 10k can be used to correlate stock prices and business effectiveness and restructuring . In this assignment, we added a new corpus from Amazon 10K and applied sentiment analysis. Then we used laughran lexicon and applied it to the Amazon 10K corpus. We found out that words such as obligations had many frequency under the constraining sentiment and losses and loss had high frequency in the negative sentiment. Based on comparing the different 10K for Amazon using the laughran lexicon,
+One thing I do found interesting was that in Q2, since Amazon had higher gains than Compare to Q3. They did mention gains as the most positive sentiment compare to being second in Q3 sentiments and the frequencies were 20:12 between Q2 and Q3. For the financial documents laughran lexicon seems useful because it gave an in depth sentiment of the 10K compare to the bing lexicon where the most positive word was fulfillment which in this case is int a positive work but it reference fulfillment centers amazon have.

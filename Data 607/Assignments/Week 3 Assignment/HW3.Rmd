@@ -1,0 +1,162 @@
+---
+title: "HW3"
+author: "Shariq Mian"
+date: "9/12/2021"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(stringr)
+library(htmltools)
+```
+
+Week 3 assignment
+Please deliver links to an R Markdown file (in GitHub and rpubs.com) with solutions to the problems below.  You may work in a small group, but please submit separately with names of all group participants in your submission.
+
+# 1 Using the 173 majors listed in fivethirtyeight.com’s College Majors dataset [https://fivethirtyeight.com/features/the-economic-guide-to-picking-a-college-major/], provide code that identifies the majors that contain either "DATA" or "STATISTICS"
+
+```{r load data}
+df = read.csv(url('https://github.com/fivethirtyeight/data/raw/e48bfdad04d909610cecb01d5a4ba2c99cb997f3/college-majors/majors-list.csv'), stringsAsFactors = FALSE)
+str(df)
+```
+
+```{r using grep}
+data_statistics_major =  df$Major[grep("DATA|STATISTICS", df$Major)]
+data_statistics_major
+```
+
+# 2 Write code that transforms the data below:
+
+[1] "bell pepper"  "bilberry"     "blackberry"   "blood orange"
+
+[5] "blueberry"    "cantaloupe"   "chili pepper" "cloudberry"  
+
+[9] "elderberry"   "lime"         "lychee"       "mulberry"    
+
+[13] "olive"        "salal berry"
+
+Into a format like this:
+
+c("bell pepper", "bilberry", "blackberry", "blood orange", "blueberry", "cantaloupe", "chili pepper", "cloudberry", "elderberry", "lime", "lychee", "mulberry", "olive", "salal berry")
+
+```{r}
+fruits_veg <- '[1] "bell pepper"  "bilberry"     "blackberry"   "blood orange"
+
+[5] "blueberry"    "cantaloupe"   "chili pepper" "cloudberry"  
+
+[9] "elderberry"   "lime"         "lychee"       "mulberry"    
+
+[13] "olive"        "salal berry"'
+```
+
+```{r}
+fruits_veg
+```
+```{r}
+fruits_veg_wo= unlist(str_extract_all(fruits_veg, pattern = "\"([a-z]+.[a-z]+)\""))
+fruits_veg_wo
+```
+
+```{r}
+fruits_veg_wo_cl= str_remove_all(fruits_veg_wo, "\"")
+fruits_veg_wo_cl=c(fruits_veg_wo_cl)
+fruits_veg_wo_cl
+```
+
+The two exercises below are taken from R for Data Science, 14.3.5.1 in the on-line version:
+
+#3 Describe, in words, what these expressions will match:
+
+```{r}
+words <- '[1] "bell pepper"  "bilberry"     "church"   "pressure"
+
+[5] "blueberry"    "eleven"   "chili pepper" "apple"  
+
+[9] "abcdfdfbcafgfdg"   "papaya"         "dad"       "mulberry"    
+
+[13] "believe"        "salal berry" "Banana"  "coconut"'
+
+words_wo= unlist(str_extract_all(words, pattern = "\"([a-z]+.[a-z]+)\""))
+wrods_wo_cl= str_remove_all(words_wo, "\"")
+```
+
+
+(.)\1\1
+
+Match any strings that have a character that repeats back to back
+
+```{r}
+expression1 = "(.)\1\1"
+wrods_wo_cl %>% 
+  str_subset(expression1)
+```
+
+"(.)(.)\\2\\1"
+
+This could match anything like 4 characters, with the first and last matching and then the two middle matching.
+
+```{r,}
+expression2 = "(.)(.)\\2\\1"
+wrods_wo_cl %>% 
+  str_subset(expression2)
+```
+
+(..)\1
+
+String contains the exact same character, repeated 2 or more times
+
+```{r}
+expression3 = "(..)\1"
+wrods_wo_cl %>% 
+  str_subset(expression3)
+```
+
+"(.).\\1.\\1"
+
+it will look for 3 repeating words in a string.
+
+```{r}
+expression4 = "(.).\\1.\\1"
+wrods_wo_cl %>% 
+  str_subset(expression4)
+```
+
+"(.)(.)(.).*\\3\\2\\1"
+
+it will look at the first three letters and then see if there is an opposite pattern like abcdfdfdfcba.
+
+```{r}
+expression5 = "(.)(.)(.).*\\3\\2\\1"
+wrods_wo_cl %>% 
+  str_subset(expression5)
+```
+
+#4 Construct regular expressions to match words that:
+
+Start and end with the same character.
+```{r}
+expression9 = "^(.).*\\1$"
+wrods_wo_cl %>% 
+  str_subset(expression9)
+```
+Contain a repeated pair of letters (e.g. "church" contains "ch" repeated twice.)
+```{r}
+expression6 = "(..).*\\1"
+wrods_wo_cl %>% 
+  str_subset(expression6)
+```
+
+Contain one letter repeated in at least three places (e.g. "eleven" contains three "e"s.)
+```{r}
+expression7 = "(.).*\\1.*\\1"
+wrods_wo_cl %>% 
+  str_subset(expression7)
+```

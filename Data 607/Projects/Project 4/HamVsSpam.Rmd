@@ -1,0 +1,328 @@
+---
+title: "Project4"
+author: "Shariq Mian"
+date: "11/15/2021"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r,message=FALSE, warning=FALSE}
+library(tm)
+library(knitr)
+library(plyr)
+library(wordcloud)
+library(tidyverse)
+library(tm)
+library(magrittr)
+library(data.table)
+library(e1071)
+library(caret)
+library(randomForest)
+library(tidymodels)
+library(caTools)
+library(gmailr)
+```
+
+```{r, message=FALSE, warning=FALSE }
+ham="~/Shariq School/SPS/Data 607/SpamHam/easy_ham"
+count_ham=length(list.files(path = ham))
+ham_list=list.files(ham)
+count_ham
+```
+
+
+```{r, message=FALSE, warning=FALSE}
+spam= "~/Shariq School/SPS/Data 607/SpamHam/spam_2"
+count_spam=length(list.files(path = spam))
+spam_list=list.files(spam)
+count_spam
+```
+
+```{r, message=FALSE, warning=FALSE}
+spam_list=list.files(spam)
+ham_text = NA
+for(i in 1:length(ham_list))
+{
+  path=paste0(ham, "/", ham_list[i])  
+  text =readLines(path)
+  list= list(paste(text, collapse="\n"))
+  ham_text = c(ham_text,list)
+  
+}
+
+spam_text = NA
+for(i in 1:length(spam_list))
+{
+  path=paste0(spam, "/", spam_list[i])  
+  text =readLines(path)
+  list= list(paste(text, collapse="\n"))
+  spam_text = c(spam_text,list)
+}
+```
+
+```{r, eval= FALSE, message=FALSE, warning=FALSE}
+email_body <- function(ham_text){
+  message = str_split(ham_text,"\n\n") %>% unlist()
+  body = paste(message[2:length(message)], collapse=' ' )
+  return(body)
+}
+
+ham_text <- email_body(ham_text)
+```
+
+# general filtering opts:
+
+```{r ham corpus, message=FALSE, warning=FALSE}
+# Building a new corpus
+ham_corpus =VCorpus(VectorSource(unlist(lapply(ham_text, as.character))))
+ham_terms_matrix = TermDocumentMatrix(ham_corpus,control= list(removePunctuation=TRUE, removeNumbers=TRUE, stripWhitespace=TRUE, stopwords=TRUE))
+ham_corpus = tm_map(ham_corpus, removeNumbers)
+ham_corpus = tm_map(ham_corpus, removeWords, stopwords())
+ham_corpus = tm_map(ham_corpus, removePunctuation)
+ham_corpus = tm_map(ham_corpus, stemDocument)
+ham_corpus = tm_map(ham_corpus, stripWhitespace)
+```
+
+```{r}
+ham_terms_matrix = TermDocumentMatrix(ham_corpus)
+```
+
+```{r spam corpus}
+spam_corpus= VCorpus(VectorSource(spam_text))
+spam_terms_matrix= TermDocumentMatrix(spam_corpus,control=list(removePunctuation=TRUE, removeNumbers=TRUE, stripWhitespace=TRUE, stopwords=TRUE))
+spam_corpus = tm_map(spam_corpus, removeNumbers)
+spam_corpus = tm_map(spam_corpus, removeWords, stopwords())
+spam_corpus = tm_map(spam_corpus, removePunctuation)
+spam_corpus = tm_map(spam_corpus, stemDocument)
+spam_corpus = tm_map(spam_corpus, stripWhitespace)
+```
+
+```{r}
+spam_terms_matrix = TermDocumentMatrix(spam_corpus)
+```
+
+```{r spam df , message=FALSE, warning=FALSE}
+spam_df = as.data.frame(as.table(spam_terms_matrix))
+spam_df$spam_ham = "1"
+colnames(spam_df) = c('TERM', 'SPAM_DOCS', 'FREQ', 'CLASS')
+spam_df = subset(spam_df, select = -c(2) )
+spam_df$FREQ[is.na(spam_df$FREQ)] = '0'
+spam_df = ddply(spam_df, .(TERM, CLASS), summarize, FREQ = sum(as.numeric(FREQ)))
+head(spam_df, n = 20)
+```
+
+```{r ham df, message=FALSE, warning=FALSE}
+ham_df = as.data.frame(as.table(ham_terms_matrix))
+ham_df$spam_ham = "0"
+colnames(ham_df) = c('TERM', 'HAM_DOCS', 'FREQ', 'CLASS')
+ham_df = subset(ham_df, select = -c(2) )
+ham_df$FREQ[is.na(ham_df$FREQ)] = '0'
+ham_df = ddply(ham_df, .(TERM, CLASS), summarize, FREQ = sum(as.numeric(FREQ)))
+head(ham_df, n = 20)
+```
+
+```{r, message=FALSE, warning=FALSE}
+# Bind the data frames
+spam_ham_df = rbind(spam_df,ham_df)
+head(spam_ham_df)
+```
+
+```{r, message=FALSE, warning=FALSE}
+spam_ham_df<- spam_ham_df[sample(nrow(spam_ham_df)),]
+head(spam_ham_df, n=20)
+```
+
+```{r, message=FALSE, warning=FALSE}
+wordcloud(ham_corpus, max.words = 200, random.order = FALSE, colors=c('green'))
+```
+
+```{r, message=FALSE,  warning=FALSE}
+wordcloud(spam_corpus, max.words = 200, random.order = FALSE, colors=c('red'))
+```
+
+```{r randomize rows}
+spam_ham_df<- spam_ham_df[sample(nrow(spam_ham_df)),]
+```
+
+```{r select columns}
+spam_ham_df$CLASS=factor(spam_ham_df$CLASS) 
+spam_ham_df$CLASS <- as.numeric(as.character(spam_ham_df$CLASS))   
+spam_ham_df=spam_ham_df[c("TERM", "CLASS")]
+spam_ham_df
+```
+
+
+```{r split train data}
+set.seed(1024)
+split = sample.split(spam_ham_df$CLASS, SplitRatio = 0.8)
+training = subset(spam_ham_df, split == TRUE)
+testing = subset(spam_ham_df, split == FALSE)
+noob =  ncol(training) - 1
+```
+
+```{r}
+   
+training$CLASS
+
+```
+
+## Random Forest Classifier
+```{r}
+classifier = randomForest(x = training[-noob],y = training$CLASS,ntree = 3)
+```
+## Accuracy
+
+In confusion matrix, I didnt have any false negative and my accuracy was 100%.
+```{r confusion matrix}
+y_predictor = predict(classifier, newdata = testing[-noob])
+confusion_matrix <- table(y_predictor>0,testing$CLASS)
+confusion_matrix
+
+```
+
+I want to connect to my own gmail to test it on some spam and ham emails in my gmail and see what accuracy I get.
+```{r connecting to gmail}
+gm_auth_configure(path  = "credentials.json")
+gm_auth(email = TRUE, cache = ".secret")
+``` 
+
+
+
+```{r eval=FALSE}
+msgs = gm_messages(search="before:2021/15/11 after:2021/11/01", num_results = 5, label_ids="Spam")
+```
+
+
+```{r eval=FALSE}
+msgs
+```
+
+```{r eval=FALSE}
+ids = gmailr::gm_id(msgs, what="message_id")
+o = gmail.sentiment(ids)
+
+write.table(o, "./gmail_text_analysis.csv", sep=",", row.names=F)
+
+```
+
+```{r gmail corpus}
+gmail="~/Shariq School/SPS/Data 607/SpamHam/Gmail"
+count_gmail=length(list.files(path = gmail))
+gmail_list=list.files(gmail)
+count_gmail
+
+gmail_text = NA
+for(i in 1:length(gmail_list))
+{
+  path=paste0(gmail, "/", gmail_list[i])  
+  text =readLines(path)
+  list= list(paste(text, collapse="\n"))
+  gmail_text = c(gmail_text,list)
+  
+}
+
+gmail_text
+```
+
+
+# Building a new corpus
+```{r}
+gmail_corpus =VCorpus(VectorSource(unlist(lapply(gmail_text, as.character))))
+gmail_terms_matrix = TermDocumentMatrix(gmail_corpus,control= list(removePunctuation=TRUE, removeNumbers=TRUE, stripWhitespace=TRUE, stopwords=TRUE))
+gmail_corpus = tm_map(gmail_corpus, removeNumbers)
+gmail_corpus = tm_map(gmail_corpus, removeWords, stopwords())
+gmail_corpus = tm_map(gmail_corpus, removePunctuation)
+gmail_corpus = tm_map(gmail_corpus, stemDocument)
+gmail_corpus = tm_map(gmail_corpus, stripWhitespace)
+gmail_terms_matrix = TermDocumentMatrix(gmail_corpus)
+```
+
+```{r}
+gmail_df = as.data.frame(as.table(gmail_terms_matrix))
+gmail_df$gmail_spam = "1"
+colnames(gmail_df) = c('TERM', 'gmail_DOCS', 'FREQ', 'CLASS')
+gmail_df = subset(gmail_df, select = -c(2) )
+gmail_df$FREQ[is.na(gmail_df$FREQ)] = '0'
+gmail_df = ddply(gmail_df, .(TERM, CLASS), summarize, FREQ = sum(as.numeric(FREQ)))
+head(gmail_df, n = 20)
+```
+
+```{r}
+gmail1="~/Shariq School/SPS/Data 607/SpamHam/Gmail1"
+count_gmail1=length(list.files(path = gmail1))
+gmail1_list=list.files(gmail1)
+count_gmail1
+
+gmail1_text = NA
+for(i in 1:length(gmail1_list))
+{
+  path=paste0(gmail1, "/", gmail1_list[i])  
+  text =readLines(path)
+  list= list(paste(text, collapse="\n"))
+  gmail1_text = c(gmail1_text,list)
+  
+}
+
+gmail1_text
+```
+
+# Building a new corpus
+
+```{r}
+gmail1_corpus =VCorpus(VectorSource(unlist(lapply(gmail1_text, as.character))))
+gmail1_terms_matrix = TermDocumentMatrix(gmail1_corpus,control= list(removePunctuation=TRUE, removeNumbers=TRUE, stripWhitespace=TRUE, stopwords=TRUE))
+gmail1_corpus = tm_map(gmail1_corpus, removeNumbers)
+gmail1_corpus = tm_map(gmail1_corpus, removeWords, stopwords())
+gmail1_corpus = tm_map(gmail1_corpus, removePunctuation)
+gmail1_corpus = tm_map(gmail1_corpus, stemDocument)
+gmail1_corpus = tm_map(gmail1_corpus, stripWhitespace)
+gmail1_terms_matrix = TermDocumentMatrix(gmail1_corpus)
+```
+
+```{r}
+gmail1_df = as.data.frame(as.table(gmail1_terms_matrix))
+gmail1_df$gmail1_ham = "0"
+colnames(gmail1_df) = c('TERM', 'gmail1_DOCS', 'FREQ', 'CLASS')
+gmail1_df = subset(gmail1_df, select = -c(2) )
+gmail1_df$FREQ[is.na(gmail1_df$FREQ)] = '0'
+gmail1_df = ddply(gmail1_df, .(TERM, CLASS), summarize, FREQ = sum(as.numeric(FREQ)))
+head(gmail1_df, n = 20)
+
+```
+
+```{r}
+gmail_ham_df = rbind(gmail_df,gmail1_df)
+gmail_ham_df
+gmail_ham_df$CLASS=factor(gmail_ham_df$CLASS) 
+gmail_ham_df$CLASS <- as.numeric(as.character(gmail_ham_df$CLASS)) 
+gmail_ham_df
+gmail_ham_df<- gmail_ham_df[sample(nrow(gmail_ham_df)),]
+gmail_ham_df
+```
+
+```{r}
+testing_gmail = gmail_ham_df
+```
+
+```{r}
+testing_gmail
+```
+
+## Random Forest Classifier
+```{r}
+classifier = randomForest(x = training[-noob],y = training$CLASS,ntree = 3)
+```
+## Accuracy
+
+In confusion matrix, I dint have any false negative and my accuracy was 100%.
+```{r}
+y_predictor1 = predict(classifier, newdata = testing_gmail[-noob])
+confusion_matrix1 <- table(y_predictor>0,testing_gmail$CLASS)
+confusion_matrix1
+```

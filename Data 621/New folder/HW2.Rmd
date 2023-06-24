@@ -1,0 +1,160 @@
+---
+title: "Untitled"
+author: "Shariq Mian"
+date: "3/20/2022"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+df=read.csv('https://github.com/mianshariq/SPS/raw/91ba7daade82c6d57e1c585f10181eda7023b976/Data%20621/HW2/classification-output-data.csv')
+head(df,3)
+
+```
+
+```{r}
+df1 <- df %>% 
+  select(class, scored.class, scored.probability)
+tail(df1,10)
+```
+
+```{r}
+df1 %>% 
+  select(class, scored.class) %>%
+  table()
+```
+
+
+```
+```
+
+```{r}
+accuracy_fun = function(df){
+  sumofall=nrow(df)
+  TN =sum(df1$class == 0 & df1$scored.class ==0)
+  TP =sum(df1$class == 1 & df1$scored.class ==1)
+  return((TN+TP)/sumofall)
+}
+
+accuracy_fun(df1)
+```
+
+```{r}
+classification_error_rate = function(df){
+  sumofall=nrow(df)
+  FP =sum(df1$class == 0 & df1$scored.class ==1)
+  FN =sum(df1$class == 1 & df1$scored.class ==0)
+  return((FP+FN)/sumofall)
+}
+
+classification_error_rate(df1)
+```
+
+```{r}
+total=accuracy_fun(df1)+classification_error_rate(df1)
+total
+```
+
+```{r}
+precision_func = function(df){
+  TP =sum(df1$class == 1 & df1$scored.class ==1)
+  FP =sum(df1$class == 0 & df1$scored.class ==1)
+  return((TP)/(TP+FP))
+}
+
+precision_func(df1)
+```
+
+
+```{r}
+sensitivity_func = function(df){
+  TP =sum(df1$class == 1 & df1$scored.class ==1)
+  FN =sum(df1$class == 1 & df1$scored.class ==0)
+  return((TP)/(TP+FN))
+}
+
+sensitivity_func(df1)
+```
+
+```{r}
+specificity_func = function(df){
+  FP =sum(df1$class == 0 & df1$scored.class ==1)
+  TN =sum(df1$class == 0 & df1$scored.class ==0)
+  return((TN)/(TN+FP))
+}
+
+specificity_func(df1)
+```
+
+```{r}
+F1Score = function(df){
+  precision=precision_func(df1)
+  sensitivity=sensitivity_func(df1)
+  return((2*precision*sensitivity)/(precision+sensitivity))
+}
+
+F1Score(df1)
+```
+F1 Score bound be between 0 and 1. If a (Precision) is between 0 and 1 and Sensitivity is between 0 and 1, then the limit approaches 0 but not 0. Then a*b is less than a. In this case when the limit approaches 0 then F1 score approaches 0.If a approaches 1 then F1 score approaches 1.
+
+```{r}
+ROCcurve = function(x, y){
+  x <- x[order(y, decreasing = TRUE)]
+  TPRate <- cumsum(x) / sum(x)
+  FPRate <- cumsum(!x) / sum(!x)
+  xy <- data.frame(TPRate, FPRate, x)
+  
+  FPRate_df <- c(diff(xy$FPRate), 0)
+  TPRate_df <- c(diff(xy$TPRate), 0)
+  AUC <- round(sum(xy$TPRate * FPRate_df) + sum(TPRate_df * FPRate_df)/2, 3)
+  
+  plot(xy$FPRate, xy$TPRate, type = "l",
+       main = "ROC Curve",
+       xlab = "Specificity",
+       ylab = "Sensivity")
+  abline(a = 0, b = 1)
+  legend(.5, .6, AUC, title = "AUC")
+}
+
+ROCcurve(df$class,df$scored.probability)
+```
+
+```{r}
+acc=accuracy_fun(df)
+clas=classification_error_rate(df)
+pres=precision_func(df) 
+sens=sensitivity_func(df)
+spec=specificity_func(df)
+f1=F1Score(df)
+output <- c("Accuracy", "Classification Error Rate", "Precision", "Sensitivity", 
+          "Specificity", "F1 Score")
+val <- c(acc, clas, pres, sens , spec, f1)
+result <- cbind(Metric = output, "Calculated Result" = round(val, 4)) 
+knitr::kable(result)
+```
+
+
+
+```{r}
+library(caret)
+df_table = with(df1, table(scored.class, class)[2:1,2:1])
+confusionMatrix(df_table)
+```
+
+
+```{r}
+library(pROC)
+roc=plot(roc(df1$class, df1$scored.probability), main="pROC Curve")
+roc$auc
+```
+
+
+
+

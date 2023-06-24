@@ -1,0 +1,60 @@
+---
+title: "Data621 HW1"
+author: "Shariq Mian"
+date: "2/28/2022"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggcorrplot)
+library(DT)
+library(zoo)
+library(dplyr)
+library(heatmaply)
+library(GGally)
+
+library(Hmisc)
+```
+
+```{r}
+train_df=read.csv("~/GitHub/SPS/Data 621/HW1/moneyball-training-data.csv")
+test_df=read.csv("~/GitHub/SPS/Data 621/HW1/moneyball-training-data.csv")
+```
+
+
+```{r}
+train_ex=train_df
+describe(train_ex)
+```
+
+```{r}
+train_=replace(train_df, TRUE, lapply(train_df, na.aggregate))
+summary(train_)
+
+corr=round(cor(train_),2)
+corr
+p.train=cor_pmat(train_)
+head(p.train)
+
+
+ggcorrplot(corr, hc.order = TRUE, lab=TRUE, p.mat =p.train, insig = "blank" )
+```
+
+```{r}
+train_df=train_
+ggpairs(train_df, title='correlogram with ggpairs') 
+```
+
+```{r}
+ggplot(train_df, aes(x=sqrt(TEAM_BATTING_H), y= TARGET_WINS)) + 
+  geom_point(size=2)+
+  stat_smooth(method="lm", formula = y~x)+
+  stat_smooth(method="loess", formula = y~x)
+```

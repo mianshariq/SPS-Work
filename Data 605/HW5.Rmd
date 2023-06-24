@@ -1,0 +1,124 @@
+---
+title: "DATA605 HW6"
+author: "Shariq Mian"
+date: "3/5/2023"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Question 1
+A bag contains 5 green and 7 red jellybeans. How many ways can 5 jellybeans be withdrawn from the bag so that the number of green ones withdrawn will be less than 2?
+```{r}
+
+Q1=choose(5,1)*choose(7,4)+choose(5,0)*choose(7,5)
+Q1 #5C1∗7C4+5C0∗7C5=196
+```
+
+## Question 
+A certain congressional committee consists of 14 senators and 13 representatives. How many ways can a subcommittee of 5 be formed if at least 4 of the members must be representatives?
+```{r}
+Q2 = choose(13,4)*choose(14,1)+choose(13,5)+choose(14,0)
+Q2 #11298 Ways.
+```
+
+
+Question 3
+
+If a coin is tossed 5 times, and then a standard six-sided die is rolled 2 times, and finally a group of three cards are drawn from a standard deck of 52 cards without replacement, how many different outcomes are possible?
+```{r}
+Q3 = 2^5*6^2*52*51*50
+Q3
+```
+
+## Question 4
+3 cards are drawn from a standard deck without replacement. What is the probability that at least one of the cards drawn is a 3? Express your answer as a fraction or a decimal number rounded to four decimal places.
+```{r}
+three = round(1- 48/52*47/51*46/50,4)
+totals = choose(52,3)
+not_three = choose(48,3)
+pthree = round(1-not_three/totals,4)
+pthree
+```
+
+
+## Question 5
+Lorenzo is picking out some movies to rent, and he is primarily interested in documentaries and mysteries. He has narrowed down his selections to 17 documentaries and 14 mysteries.
+
+### Step 1. How many different combinations of 5 movies can he rent?
+
+```{r}
+Q5a<-choose(31,5)
+Q5a
+m1=choose(14,1)*choose(17,4)
+m1
+m2=choose(14,2)*choose(17,3)
+m2
+m3= choose(14,3)*choose(17,2)
+m3
+m4=choose(14,4)*choose(17,1)
+m4
+m5=choose(14,5)*choose(17,0)
+m5
+```
+
+### Step 2. How many different combinations of 5 movies can he rent if he wants at least one mystery?
+```{r}
+Q5b<- m1+m2+m3+m4+m5
+Q5b
+```
+
+## Question 6
+
+In choosing what music to play at a charity fund raising event, Cory needs to have an equal number of symphonies from Brahms, Haydn, and Mendelssohn. If he is setting up a schedule of the 9 symphonies to be played, and he has 4 Brahms, 104 Haydn, and 17 Mendelssohn symphonies from which to choose, how many different schedules are possible? Express your answer in scientific notation rounding to the hundredths place.
+
+```{r}
+Q6 <- format(signif(104*103*101*17*16*15*4*3*2,3),scientific = TRUE)
+Q6
+```
+
+
+## Question 7
+An English teacher needs to pick 13 books to put on his reading list for the next school year, and he needs to plan the order in which they should be read. He has narrowed down his choices to 6 novels, 6 plays, 7 poetry books, and 5 nonfiction books.
+
+```{r}
+nf0 <- 19*18*17*16*15*14*13*12*11*10*9*8*7
+nf1 <- 19*18*17*16*15*14*13*12*11*10*9*8*6
+nf2 <- 19*18*17*16*15*14*13*12*11*10*9*6*5
+nf3 <- 19*18*17*16*15*14*13*12*11*10*6*5*4
+nf4 <- 19*18*17*16*15*14*13*12*11*6*5*4*3
+Q7 <- format(signif(nf0+nf1+nf2+nf3+nf4,3),scientific=TRUE)
+Q7
+Q7a <- format(signif(6*5*4*3*2*1*18*17*16*15*14*13*12,3),scientific = TRUE)
+Q7a
+```
+
+## Question 8
+Zane is planting trees along his driveway, and he has 5 sycamores and 5 cypress trees to plant in one row. What is the probability that he randomly plants the trees so that all 5 sycamores are next to each other and all 5 cypress trees are next to each other? Express your answer as a fraction or a decimal number rounded to four decimal places.
+```{r}
+ways <-2
+totaltrees <- 10
+sycamores <-5
+cypress <- 5
+Q8 <- round(ways/(factorial(totaltrees)/(factorial(sycamores)^2)),4)
+Q8
+```
+
+## Question 9
+
+If you draw a queen or lower from a standard deck of cards, I will pay you $4. If not, you pay me $16. (Aces are considered the highest card in the deck.)
+```{r}
+lessq <- 44/52
+win <- 4
+lose <- -16
+notlessq <-8/52
+Q9 <- round(lessq*win+notlessq*lose,2)
+Q9 
+Q9a <- round(lessq*833*4 + notlessq*833*(-16),2)
+Q9a
+```

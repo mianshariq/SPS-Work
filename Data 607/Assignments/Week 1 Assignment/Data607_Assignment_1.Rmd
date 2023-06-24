@@ -1,0 +1,179 @@
+---
+title: "Data607-Assignment1"
+author: "Shariq Mian"
+date: "8/28/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introducation
+I choose the MLB baseball data set which shows the elo ratings for all the teams and their prediction for games. The specific article is whether the New York Yankees have gotten better since the deadline or just luckier. I was interested to see whether the trade deadline had an impact of the elo ratings and whether it was able to change the ratings based on the trades and therefore the predictions. Below is the link to the article.
+https://fivethirtyeight.com/features/have-the-streaking-yankees-gotten-better-or-just-luckier/
+
+## Importing Libraries
+```{r, warning=FALSE}
+library(dplyr)
+library(naniar)
+library(ggplot2)
+library(ggplot2)
+```
+
+## Importing Data from my github
+```{r}
+df= read.csv("https://github.com/mianshariq/SPS/raw/75be027d76a4942451095a93bc5ebc81915f16bb/Data%20607/Assignments/Week%201%20Assignment/mlb_elo_latest.csv")
+```
+
+## Exploratory Analysis
+```{r}
+head(df)
+```
+
+```{r}
+summary(df)
+```
+
+```{r}
+gg_miss_fct(df, date)+ labs(title = "     Nan or Missing Data")
+```
+
+Removing column 3 and 4 as data as columns missing data
+```{r}
+df=df[c(1,2,5:26)]
+```
+
+Filtering data set by games played so far this season
+```{r}
+df1=filter(df, date < "2021-08-28")
+summary(df1)
+```
+
+Renaming columns
+```{r}
+names(df1)[names(df1) == "team1"] <- "HomeTeam1"
+names(df1)[names(df1) == "team2"] <- "AwayTeam2"
+```
+Filtering for New York Yankees games only
+```{r}
+df1=filter(df1, HomeTeam1 =="NYY" | AwayTeam2=="NYY")
+```
+
+Separating Home and Away games in separate Tables and then concatenating the tables vertically to get all the games under 1 column
+```{r}
+df2=filter(df1,HomeTeam1 =="NYY")
+
+df2=df2[c('date', 'HomeTeam1', 'rating1_pre', 'rating_prob1')]
+df2 <- df2 %>% rename( Team = HomeTeam1, rating_pre = rating1_pre, rating_prob = rating_prob1)
+
+
+df3=filter(df1,AwayTeam2 =="NYY")
+df3=df3[c('date', 'AwayTeam2', 'rating2_pre', 'rating_prob2')]
+df3 <- df3 %>% rename(Team = AwayTeam2, rating_pre = rating2_pre, rating_prob = rating_prob2)
+
+df4=rbind(df2,df3)
+```
+
+```{r}
+df4=arrange(df4, date)
+```
+
+Removing Double Header games for Graphing purposes
+```{r}
+df4=distinct(df4, date, .keep_all = TRUE)
+str(df4)
+df4$date=as.Date(df4$date)
+```
+
+```{r}
+head(df4)
+```
+
+## Question1: How does the New York Yankees stack up in this ELO model?
+
+If we filter for probability of winning a game > .5, we get the results that according to the model, the NYY had 101 games where prob >.5 and 24 games with prob <.5 . The mean of the probabilities is .5627, meaning that 56% of the time the NYY will win the game. The record according to this model should be 101-24 for the season so far. Their actual record is 76-53. there is a 4 game variation due to double headers. This gives an accuracy of 56.4 % for the elo model. Which is not a great model, almost close to 50/50. 
+
+```{r}
+mean(df4[["rating_prob"]])
+df4 %>% count(rating_prob>.5)
+      
+```
+Here is histogram showing the spread of the probabilities. According to the model, the NYY should be winning majorities of their games.
+```{r}
+ch1=ggplot(df4, aes(x=rating_prob, fill=rating_prob>.50)) +
+geom_histogram(position="identity", bins = 10)
+ch1
+```
+
+Here I want to see whether the trade deadline had an effect on the elo model and whether the mean probability and the record has increased or decreased. Below is the average of the probabilities before the deadline
+```{r}
+df41=filter(df4, date < "2021-07-04")
+print(mean(df41[["rating_prob"]]))
+df41 %>% count(rating_prob>.5)
+```
+Below is the histogram of the probailities before the deadline
+```{r}
+ch41=ggplot(df41, aes(x=rating_prob, fill=rating_prob>.50)) +
+  geom_histogram(position="identity", bins = 10)
+ch41
+```
+
+Below is the average of the probabilities after the deadline.
+According to this the NYY have a lower chance of winning games after the trade deadline. Keep in mind that its possible that other factors such as schedule is much harder for them after the deadline which might have decreased the probability. 
+```{r}
+df42=filter(df4, date > "2021-07-04")
+mean(df42[["rating_prob"]])
+df42 %>% count(rating_prob>.5)
+```
+Below is the histogram of the probailities before the deadline
+```{r}
+ch42=ggplot(df42, aes(x=rating_prob, fill=rating_prob>.50)) +
+  geom_histogram(position="identity", bins = 10)
+ch42
+```
+
+## Question 2: Does the model capture the current NYY 13 game winning streak? Is the model too linear?
+Below is the chart which shows the team rating for NYY from the beginning of the season. As you can see, the NYY started off as of of the highest ranking with 1572 rating score, ranked top 5. the lowest rating being 1410 and highest being 1607.As the season went on filled with injuries, they were close to .500 record beofre the trade dealine with 2% chance of making the playoffs. Now they are riding a 13 game winning streak and their chances of making playoffs have increased to 98%. 
+
+```{r}
+chart=ggplot(data=df4, aes(x=date, y=rating_pre))+
+  geom_line(color="#69b3a2")+
+  annotate(geom="text", x=as.Date("2021-07-04"), y=1535.387, 
+           label="Trade Deadline") +
+  annotate(geom="point", x=as.Date("2021-07-04"), y=1540.387, size=10, shape=21, fill="transparent") +
+  geom_hline(yintercept=1530, linetype='dotted', col = 'red')+
+  annotate("text", x =as.Date("2021-05-01"), y = 1530, label = "Average League rating ", vjust = -0.5)+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+chart
+```
+Below we are filtering Gerrit Cole
+```{r}
+df5=df1[c(1:24)]
+df6=filter(df5,pitcher1 == "Gerrit Cole")
+df7=filter(df5,pitcher2 == "Gerrit Cole")
+df6=df6[c('date', 'HomeTeam1', 'rating1_pre','pitcher1', 'pitcher1_adj', 'rating_prob1')]
+df6 <- df6 %>% rename( Team = HomeTeam1, rating_pre = rating1_pre,pitcher = pitcher1, pitcher_adj = pitcher1_adj, rating_prob= rating_prob1 )
+df7=df7[c('date', 'AwayTeam2', 'rating2_pre','pitcher2', 'pitcher2_adj', 'rating_prob2')]
+df7 <- df7 %>% rename( Team = AwayTeam2, rating_pre = rating2_pre,pitcher = pitcher2, pitcher_adj = pitcher2_adj, rating_prob= rating_prob2 )
+df8=rbind(df6,df7)
+head(df8)
+df8=mutate(df8, ttl_rating = rating_pre+pitcher_adj)
+df8$date=as.Date(df8$date)
+str(df8)
+```
+## Question 3: How much does difference NYY best pitcher (Gerrit Cole) makes to the team ratings.
+Its amazing the impact he has on the ratings of the team. He adds ~ 45 points to all his starts. That shows that, he can beat the best team, given they are starting an average pitcher. 
+
+```{r}
+
+ch=ggplot()+
+  geom_step(data=df8, aes(x=date, y=rating_pre, color="pre_rating"))+
+  geom_step(data=df8, aes(x=date, y=ttl_rating, color="Pre+Cole"))+
+  ylab('rating')
+ch  
+```
+
+## Conclusion: 
+After looking more into elo models of fivethirtyeight, baseball has the lowest model accuracy in all sports with accuracy of 59%. I think one of the main problem with the baseball elo model is that the model seems too linear and need more inputs such as Injury factor, which can compensate for the ratings as well as logarithmic approach towards win streak or hot hand, which should increase the accuracy of the models.
+
